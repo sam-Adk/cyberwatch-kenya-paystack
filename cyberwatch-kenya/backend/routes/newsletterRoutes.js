@@ -46,4 +46,16 @@ router.delete('/:id', protect, deleteNewsletter);
 // POST /api/newsletters/:id/send — email to all subscribers
 router.post('/:id/send', protect, sendNewsletter);
 
+// ── ADMIN: TRIGGER WEEKLY DIGEST MANUALLY ──────
+router.post('/admin/send-digest', protect, async (req, res) => {
+  try {
+    const { sendWeeklyDigest } = require('../utils/weeklyDigest');
+    await sendWeeklyDigest();
+    res.json({ success: true, message: '✅ Weekly digest sent to all premium subscribers!' });
+  } catch (err) {
+    console.error('Manual digest error:', err.message);
+    res.status(500).json({ success: false, message: err.message });
+  }
+});
+
 module.exports = router;
