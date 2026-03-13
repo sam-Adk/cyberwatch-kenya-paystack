@@ -176,7 +176,6 @@ async function loadPosts() {
         </td>
       </tr>`;
     }).join('');
-    `).join('');
 
   } catch (err) {
     tbody.innerHTML = `<tr><td colspan="5"><div class="alert alert-error">Failed to load posts.</div></td></tr>`;
