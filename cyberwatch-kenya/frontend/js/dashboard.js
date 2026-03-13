@@ -72,6 +72,29 @@ async function authFetch(url, options = {}) {
 // TAB NAVIGATION
 // ─────────────────────────────────────────────
 
+// ─────────────────────────────────────────────
+// AUDIENCE SELECTOR
+// ─────────────────────────────────────────────
+
+function selectAudience(value) {
+  // Check the right radio
+  const radio = document.querySelector(`input[name="postAudience"][value="${value}"]`);
+  if (radio) radio.checked = true;
+
+  // Update visual highlight on all cards
+  ['all','free','premium'].forEach(v => {
+    const card = document.getElementById(`aud-${v}`);
+    if (card) card.classList.remove('selected');
+  });
+  const selected = document.getElementById(`aud-${value}`);
+  if (selected) selected.classList.add('selected');
+}
+
+// Set default highlight on page load
+document.addEventListener('DOMContentLoaded', () => {
+  selectAudience('all');
+});
+
 function showTab(name, linkEl) {
   // Hide all panels
   document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
@@ -249,9 +272,7 @@ function editPost(id) {
   document.getElementById('postTags').value = (post.tags || []).join(', ');
   document.getElementById('postAuthor').value = post.author;
   document.getElementById('postPublished').checked = post.published;
-  // Set audience radio
-  const audRadio = document.querySelector(`input[name="postAudience"][value="${post.audience || 'all'}"]`);
-  if (audRadio) audRadio.click();
+  selectAudience(post.audience || 'all');
   document.getElementById('postFormTitle').textContent = 'Edit Post';
 
   showTab('newpost', null);
@@ -266,8 +287,7 @@ function clearPostForm() {
   document.getElementById('postTags').value = '';
   document.getElementById('postAuthor').value = 'CyberWatch Kenya Team';
   document.getElementById('postPublished').checked = false;
-  const allRadio = document.querySelector('input[name="postAudience"][value="all"]');
-  if (allRadio) allRadio.click();
+  selectAudience('all');
   document.getElementById('postFormTitle').textContent = 'New Post';
   document.getElementById('postFormAlert').innerHTML = '';
 }
