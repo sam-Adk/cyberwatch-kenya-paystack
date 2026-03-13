@@ -25,12 +25,15 @@ router.post('/subscribe', [
       if (existing.active) return res.status(400).json({ success: false, message: 'This email is already subscribed.' });
       existing.active = true;
       existing.name = name;
+      existing.plan = existing.plan || 'free';
       await existing.save();
+      sendFreeWelcomeEmail(existing).catch(e => console.error('Welcome email error:', e.message));
       return res.json({ success: true, message: 'Welcome back! You have been re-subscribed.' });
     }
 
-    await Subscriber.create({ name, email });
-    res.status(201).json({ success: true, message: '✅ Successfully subscribed! You will receive our latest scam alerts.' });
+    const subscriber = await Subscriber.create({ name, email, plan: 'free' });
+    sendFreeWelcomeEmail(subscriber).catch(e => console.error('Welcome email error:', e.message));
+    res.status(201).json({ success: true, message: '✅ Successfully subscribed!' });
   } catch (error) {
     res.status(500).json({ success: false, message: 'Server error. Please try again.' });
   }
@@ -283,6 +286,132 @@ function buildAlertEmail(subscriber, report, amountText) {
 </table>
 </body>
 </html>`;
+}
+
+// ─────────────────────────────────────────────
+// FREE WELCOME EMAIL
+// ─────────────────────────────────────────────
+async function sendFreeWelcomeEmail(subscriber) {
+  const siteUrl = process.env.SITE_URL || 'http://localhost:5000';
+  const firstName = subscriber.name.split(' ')[0];
+
+  await axios.post(
+    'https://api.brevo.com/v3/smtp/email',
+    {
+      sender: { name: 'CyberWatch Kenya', email: 'securedatakenya@gmail.com' },
+      to: [{ email: subscriber.email, name: subscriber.name }],
+      subject: `🛡️ Welcome to CyberWatch Kenya, ${firstName}! You're now protected.`,
+      htmlContent: `
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"></head>
+<body style="margin:0;padding:0;background-color:#050a05;font-family:Arial,Helvetica,sans-serif;">
+<table width="100%" cellpadding="0" cellspacing="0" style="background-color:#050a05;padding:40px 0;">
+  <tr><td align="center">
+    <table width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;">
+
+      <!-- HEADER -->
+      <tr>
+        <td style="background:linear-gradient(135deg,#0a1a0a 0%,#0d2010 50%,#0a1a0a 100%);border-radius:12px 12px 0 0;padding:48px 40px 40px;text-align:center;border:1px solid #1a3a1a;border-bottom:none;">
+          <div style="background:rgba(0,255,65,0.1);border:2px solid rgba(0,255,65,0.4);border-radius:50%;width:80px;height:80px;line-height:80px;font-size:40px;margin:0 auto 20px;">🛡️</div>
+          <h1 style="margin:0 0 4px;font-size:28px;font-weight:800;color:#ffffff;">CyberWatch <span style="color:#00ff41;">Kenya</span></h1>
+          <p style="margin:0 0 24px;font-size:12px;color:#00ff41;letter-spacing:3px;font-family:'Courier New',monospace;">CYBERSECURITY INTELLIGENCE</p>
+          <h2 style="margin:0 0 12px;font-size:24px;color:#ffffff;font-weight:700;">Welcome, ${firstName}! 🎉</h2>
+          <p style="margin:0;font-size:16px;color:#aad4aa;line-height:1.6;">You are now subscribed to Kenya's most trusted<br>cybersecurity alert network — <strong style="color:#00ff41;">for free</strong>.</p>
+        </td>
+      </tr>
+
+      <!-- GREEN BAND -->
+      <tr>
+        <td style="background:#00ff41;padding:14px 40px;border-left:1px solid #1a3a1a;border-right:1px solid #1a3a1a;">
+          <p style="margin:0;font-size:13px;color:#000;font-weight:700;text-align:center;">🔒 FREE FOREVER &nbsp;|&nbsp; NO CREDIT CARD &nbsp;|&nbsp; CANCEL ANYTIME</p>
+        </td>
+      </tr>
+
+      <!-- BODY -->
+      <tr>
+        <td style="background:#0a150a;padding:40px;border:1px solid #1a3a1a;border-top:none;border-bottom:none;">
+
+          <h3 style="margin:0 0 16px;font-size:16px;color:#00ff41;font-family:'Courier New',monospace;letter-spacing:1px;">// WHAT YOU'LL RECEIVE</h3>
+
+          <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:28px;">
+            <tr><td style="padding:0 0 10px;">
+              <table width="100%" cellpadding="14" style="background:#0d1f0d;border:1px solid #1e3a1e;border-radius:8px;">
+                <tr>
+                  <td width="40" style="font-size:24px;vertical-align:middle;padding-right:12px;">🚨</td>
+                  <td style="vertical-align:middle;padding:0;"><p style="margin:0 0 2px;font-size:14px;font-weight:700;color:#fff;">Real-Time Scam Alerts</p><p style="margin:0;font-size:12px;color:#88aa88;">Instant alerts when new threats target Kenyans</p></td>
+                </tr>
+              </table>
+            </td></tr>
+            <tr><td style="padding:0 0 10px;">
+              <table width="100%" cellpadding="14" style="background:#0d1f0d;border:1px solid #1e3a1e;border-radius:8px;">
+                <tr>
+                  <td width="40" style="font-size:24px;vertical-align:middle;padding-right:12px;">📱</td>
+                  <td style="vertical-align:middle;padding:0;"><p style="margin:0 0 2px;font-size:14px;font-weight:700;color:#fff;">M-PESA Fraud Warnings</p><p style="margin:0;font-size:12px;color:#88aa88;">SIM swap, fake Safaricom agents, mobile money scams</p></td>
+                </tr>
+              </table>
+            </td></tr>
+            <tr><td>
+              <table width="100%" cellpadding="14" style="background:#0d1f0d;border:1px solid #1e3a1e;border-radius:8px;">
+                <tr>
+                  <td width="40" style="font-size:24px;vertical-align:middle;padding-right:12px;">🔐</td>
+                  <td style="vertical-align:middle;padding:0;"><p style="margin:0 0 2px;font-size:14px;font-weight:700;color:#fff;">Weekly Security Tips</p><p style="margin:0;font-size:12px;color:#88aa88;">Practical advice to keep your accounts safe</p></td>
+                </tr>
+              </table>
+            </td></tr>
+          </table>
+
+          <!-- Upgrade nudge -->
+          <table width="100%" cellpadding="20" style="background:rgba(0,204,255,0.05);border:1px solid rgba(0,204,255,0.2);border-radius:8px;margin-bottom:28px;">
+            <tr><td>
+              <p style="margin:0 0 6px;font-size:12px;color:#00ccff;letter-spacing:1px;font-family:'Courier New',monospace;">⭐ WANT MORE?</p>
+              <p style="margin:0 0 12px;font-size:14px;color:#ccddcc;line-height:1.7;">Upgrade to <strong style="color:#00ccff;">Premium for just KSh 30/month</strong> to get priority alerts, support our mission, and help us keep protecting Kenyans.</p>
+              <a href="${siteUrl}/subscribe.html?upgrade=true" style="display:inline-block;background:#00ccff;color:#000;font-size:13px;font-weight:800;text-decoration:none;padding:10px 24px;border-radius:6px;">⭐ Upgrade to Premium →</a>
+            </td></tr>
+          </table>
+
+          <!-- CTA -->
+          <table width="100%" cellpadding="0" cellspacing="0">
+            <tr><td align="center">
+              <a href="${siteUrl}" style="display:inline-block;background:#00ff41;color:#000;font-size:15px;font-weight:800;text-decoration:none;padding:16px 40px;border-radius:8px;">🛡️ Visit CyberWatch Kenya →</a>
+            </td></tr>
+          </table>
+
+          <!-- Security tip -->
+          <table width="100%" cellpadding="16" style="background:#050f05;border-left:4px solid #00ff41;border-radius:0 8px 8px 0;margin-top:24px;">
+            <tr><td>
+              <p style="margin:0 0 6px;font-size:11px;color:#00ff41;letter-spacing:2px;font-family:'Courier New',monospace;">💡 FIRST SECURITY TIP</p>
+              <p style="margin:0;font-size:14px;color:#ccddcc;line-height:1.7;"><strong style="color:#fff;">Enable two-factor authentication (2FA)</strong> on all your important accounts — Gmail, Facebook, and your bank app. This one step blocks 99% of account takeover attacks.</p>
+            </td></tr>
+          </table>
+
+        </td>
+      </tr>
+
+      <!-- FOOTER -->
+      <tr>
+        <td style="background:#030803;border:1px solid #1a3a1a;border-radius:0 0 12px 12px;padding:28px 40px;text-align:center;">
+          <p style="margin:0 0 4px;font-size:14px;font-weight:700;color:#fff;">🛡️ CyberWatch Kenya</p>
+          <p style="margin:0 0 16px;font-size:12px;color:#557755;font-family:'Courier New',monospace;">Protecting Kenyans Online Since 2024</p>
+          <p style="margin:0;font-size:11px;color:#334433;">You subscribed at CyberWatch Kenya.<br>
+            <a href="${siteUrl}/api/subscribers/unsubscribe/${subscriber.unsubscribeToken}" style="color:#555;">Unsubscribe</a>
+          </p>
+        </td>
+      </tr>
+
+    </table>
+  </td></tr>
+</table>
+</body></html>`
+    },
+    {
+      headers: {
+        'api-key': process.env.BREVO_API_KEY,
+        'Content-Type': 'application/json'
+      }
+    }
+  );
+  console.log(`📧 Free welcome email sent to ${subscriber.email}`);
 }
 
 function escapeHtml(str) {
