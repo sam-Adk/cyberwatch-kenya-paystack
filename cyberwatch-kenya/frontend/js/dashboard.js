@@ -11,7 +11,7 @@
  * 5. Manages tab navigation
  */
 
-const API = 'http://localhost:5000/api';
+const API = 'https://cyberwatch-kenya.onrender.com/api';
 
 // ─────────────────────────────────────────────
 // AUTH GUARD — redirect if not logged in
