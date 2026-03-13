@@ -7,6 +7,13 @@
   <meta name="description" content="CyberWatch Kenya exposes online scams targeting Kenyans. Get the latest scam alerts, cybersecurity tips, and protect yourself online.">
   <link rel="stylesheet" href="css/style.css">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🛡️</text></svg>">
+  <style>
+    @keyframes thanksPop {
+      0%   { transform: scale(0); opacity: 0; }
+      70%  { transform: scale(1.1); }
+      100% { transform: scale(1); opacity: 1; }
+    }
+  </style>
 </head>
 <body>
 
@@ -381,6 +388,52 @@
       </div>
     </div>
   </section>
+
+  <!-- ═══════════════════ THANK YOU MODAL ═══════════════════ -->
+  <div class="modal-overlay hidden" id="reportThanksOverlay" onclick="closeReportThanks()">
+    <div class="modal" id="reportThanksModal" style="max-width:480px; text-align:center; padding:48px 40px;" onclick="event.stopPropagation()">
+
+      <!-- Animated checkmark -->
+      <div style="width:90px; height:90px; border-radius:50%; background:rgba(0,255,65,0.1); border:2px solid rgba(0,255,65,0.4); display:flex; align-items:center; justify-content:center; margin:0 auto 24px; animation:thanksPop 0.5s cubic-bezier(0.175,0.885,0.32,1.275);">
+        <span style="font-size:44px;">✅</span>
+      </div>
+
+      <h2 style="color:#00ff41; font-size:1.6rem; margin:0 0 12px; font-weight:800;">Thank You!</h2>
+      <p style="color:#ffffff; font-size:1rem; font-weight:600; margin:0 0 12px;" id="reportThanksName"></p>
+      <p style="color:var(--muted); font-size:14px; line-height:1.8; margin:0 0 28px;">
+        Your scam report has been received by our team.<br>
+        We will review it and publish a warning to help<br>
+        protect other Kenyans as soon as possible.
+      </p>
+
+      <!-- Report summary box -->
+      <div style="background:var(--surface2); border:1px solid var(--border); border-radius:10px; padding:16px 20px; margin-bottom:28px; text-align:left;">
+        <p style="font-size:11px; color:#00ff41; letter-spacing:2px; font-family:'Courier New',monospace; margin:0 0 10px;">REPORT SUMMARY</p>
+        <div style="display:flex; justify-content:space-between; padding:6px 0; border-bottom:1px solid var(--border); font-size:13px;">
+          <span style="color:var(--muted);">Scam Type</span>
+          <span style="color:#fff; font-weight:600;" id="thanksSummaryType">—</span>
+        </div>
+        <div style="display:flex; justify-content:space-between; padding:6px 0; border-bottom:1px solid var(--border); font-size:13px;">
+          <span style="color:var(--muted);">Platform</span>
+          <span style="color:#fff;" id="thanksSummaryPlatform">—</span>
+        </div>
+        <div style="display:flex; justify-content:space-between; padding:6px 0; font-size:13px;">
+          <span style="color:var(--muted);">Status</span>
+          <span style="color:#ffcc00; font-weight:600;">⏳ Under Review</span>
+        </div>
+      </div>
+
+      <p style="font-size:13px; color:var(--muted); margin:0 0 24px;">
+        Want to be notified when your report is published?<br>
+        <a href="subscribe.html" style="color:#00ff41; font-weight:600;">Subscribe to CyberWatch Kenya →</a>
+      </p>
+
+      <button class="btn btn-primary w-full" onclick="closeReportThanks()">
+        Close
+      </button>
+
+    </div>
+  </div>
 
   <!-- ═══════════════════ MODAL (full post view) ═══════════════════ -->
   <div class="modal-overlay hidden" id="modalOverlay" onclick="closeModalOnOverlay(event)">
