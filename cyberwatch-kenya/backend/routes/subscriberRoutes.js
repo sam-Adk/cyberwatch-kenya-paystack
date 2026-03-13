@@ -22,15 +22,20 @@ router.post('/subscribe', [
     const { name, email } = req.body;
     const existing = await Subscriber.findOne({ email: email.toLowerCase() });
     if (existing) {
-      if (existing.active) return res.status(400).json({ success: false, message: 'This email is already subscribed.' });
+      // Already active - don't allow duplicate
+      if (existing.active) {
+        return res.status(400).json({ success: false, message: 'This email is already subscribed. Check your inbox for scam alerts!' });
+      }
+      // Was unsubscribed - reactivate them
       existing.active = true;
       existing.name = name;
-      existing.plan = existing.plan || 'free';
+      existing.plan = 'free'; // reset to free on re-subscribe
       await existing.save();
       sendFreeWelcomeEmail(existing).catch(e => console.error('Welcome email error:', e.message));
       return res.json({ success: true, message: 'Welcome back! You have been re-subscribed.' });
     }
 
+    // Brand new subscriber
     const subscriber = await Subscriber.create({ name, email, plan: 'free' });
     sendFreeWelcomeEmail(subscriber).catch(e => console.error('Welcome email error:', e.message));
     res.status(201).json({ success: true, message: '✅ Successfully subscribed!' });
