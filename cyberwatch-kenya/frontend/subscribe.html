@@ -113,7 +113,7 @@
               <div class="plan-badge">⭐ PREMIUM</div>
               <div class="plan-icon">🔐</div>
               <div class="plan-name">Premium</div>
-              <div class="plan-price premium-price">KSh 30<span style="font-size:13px;color:var(--muted);">/mo</span></div>
+              <div class="plan-price premium-price">KSh 50<span style="font-size:13px;color:var(--muted);">/mo</span></div>
               <div class="plan-desc">For maximum protection</div>
               <ul class="plan-features">
                 <li>Everything in Free</li>
@@ -244,11 +244,11 @@
         document.getElementById('securityNote').innerHTML = '🔒 No credit card required — subscribe instantly';
       } else {
         document.getElementById('selectedPlanBanner').innerHTML =
-          '⭐ <strong>Premium Plan</strong> — KSh 30/month via M-PESA or Card';
+          '⭐ <strong>Premium Plan</strong> — KSh 50/month via M-PESA or Card';
         document.getElementById('selectedPlanBanner').style.background = 'rgba(0,204,255,0.08)';
         document.getElementById('selectedPlanBanner').style.border = '1px solid rgba(0,204,255,0.3)';
         document.getElementById('selectedPlanBanner').style.color = '#00ccff';
-        document.getElementById('actionBtn').innerHTML = '💳 Pay KSh 30 & Subscribe';
+        document.getElementById('actionBtn').innerHTML = '💳 Pay KSh 50 &amp; Subscribe';
         document.getElementById('securityNote').innerHTML = '🔒 Secured by Paystack — M-PESA, Card or Bank Transfer';
       }
     }
@@ -320,7 +320,7 @@
         if (!data.success) {
           alertBox.innerHTML = `<div class="alert alert-error">❌ ${data.message}</div>`;
           btn.disabled = false;
-          btn.innerHTML = '💳 Pay KSh 30 & Subscribe';
+          btn.innerHTML = '💳 Pay KSh 50 &amp; Subscribe';
           return;
         }
 
@@ -329,14 +329,14 @@
         const handler = PaystackPop.setup({
           key:      PAYSTACK_PK,
           email:    email,
-          amount:   3000,
+          amount:   5000,
           currency: 'KES',
           ref:      data.reference,
           metadata: { name, custom_fields: [{ display_name:'Subscriber Name', variable_name:'subscriber_name', value: name }] },
           callback: function(response) { confirmPayment(response.reference, email); },
           onClose:  function() {
             btn.disabled = false;
-            btn.innerHTML = '💳 Pay KSh 30 & Subscribe';
+            btn.innerHTML = '💳 Pay KSh 50 &amp; Subscribe';
             alertBox.innerHTML = '<div class="alert alert-warning">⚠️ Payment closed. Click to try again.</div>';
           }
         });
@@ -345,7 +345,7 @@
       } catch (err) {
         alertBox.innerHTML = '<div class="alert alert-error">❌ Cannot connect to server.</div>';
         btn.disabled = false;
-        btn.innerHTML = '💳 Pay KSh 30 & Subscribe';
+        btn.innerHTML = '💳 Pay KSh 50 &amp; Subscribe';
       }
     }
 
@@ -394,7 +394,7 @@
           <div style="color:#00ccff;font-size:11px;letter-spacing:2px;margin-bottom:12px;">PREMIUM RECEIPT</div>
           <div class="receipt-row"><span class="receipt-label">Plan</span><span class="receipt-value" style="color:#00ccff;">⭐ Premium</span></div>
           <div class="receipt-row"><span class="receipt-label">Reference</span><span class="receipt-value">${reference || '—'}</span></div>
-          <div class="receipt-row"><span class="receipt-label">Amount</span><span class="receipt-value">KSh 30</span></div>
+          <div class="receipt-row"><span class="receipt-label">Amount</span><span class="receipt-value">KSh 50</span></div>
           <div class="receipt-row"><span class="receipt-label">Email</span><span class="receipt-value">${email || ''}</span></div>
           ${expiryDate ? `<div class="receipt-row"><span class="receipt-label">Valid Until</span><span class="receipt-value" style="color:#00ccff;">${new Date(expiryDate).toLocaleDateString('en-KE',{day:'numeric',month:'long',year:'numeric'})}</span></div>` : ''}
         `;
