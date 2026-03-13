@@ -27,7 +27,7 @@ const Subscriber = require('../models/Subscriber');
 const Subscription = require('../models/Subscription');
 
 const PAYSTACK_SECRET = process.env.PAYSTACK_SECRET_KEY;
-const SUBSCRIPTION_AMOUNT = 50; // KSh 50
+const SUBSCRIPTION_AMOUNT = 99; // KSh 99
 const AMOUNT_IN_KOBO = SUBSCRIPTION_AMOUNT * 100; // Paystack uses kobo (cents)
 
 // Paystack base URL
@@ -86,7 +86,7 @@ exports.initializePayment = async (req, res) => {
       `${PAYSTACK_URL}/transaction/initialize`,
       {
         email: email.toLowerCase(),
-        amount: AMOUNT_IN_KOBO,          // Amount in kobo (KSh 50 = 5000 kobo)
+        amount: AMOUNT_IN_KOBO,          // Amount in kobo (KSh 99 = 5000 kobo)
         currency: 'KES',                  // Kenyan Shillings
         callback_url: callbackUrl,
         metadata: {
@@ -487,7 +487,7 @@ async function sendWelcomeEmail(subscriberId, reference, expiryDate) {
               <table width="100%" cellpadding="14" style="background:#0d1520;border:1px solid #1e2a3a;border-radius:8px;border-left:4px solid #00ccff;">
                 <tr>
                   <td width="40" style="font-size:24px;vertical-align:middle;padding-right:12px;">💙</td>
-                  <td style="vertical-align:middle;padding:0;"><p style="margin:0 0 2px;font-size:14px;font-weight:700;color:#00ccff;">Thank You for Supporting Us</p><p style="margin:0;font-size:12px;color:#88aa88;">Your KSh 50 helps us keep protecting Kenyans</p></td>
+                  <td style="vertical-align:middle;padding:0;"><p style="margin:0 0 2px;font-size:14px;font-weight:700;color:#00ccff;">Thank You for Supporting Us</p><p style="margin:0;font-size:12px;color:#88aa88;">Your KSh 99 helps us keep protecting Kenyans</p></td>
                 </tr>
               </table>
             </td></tr>
@@ -511,7 +511,7 @@ async function sendWelcomeEmail(subscriberId, reference, expiryDate) {
                 </tr>
                 <tr>
                   <td style="padding:8px 0;border-bottom:1px solid #1a2a1a;font-size:13px;color:#888;">Amount</td>
-                  <td style="padding:8px 0;border-bottom:1px solid #1a2a1a;text-align:right;font-size:13px;color:#fff;font-weight:700;">KSh 50</td>
+                  <td style="padding:8px 0;border-bottom:1px solid #1a2a1a;text-align:right;font-size:13px;color:#fff;font-weight:700;">KSh 99</td>
                 </tr>
                 <tr>
                   <td style="padding:8px 0;border-bottom:1px solid #1a2a1a;font-size:13px;color:#888;">Name</td>
@@ -585,9 +585,9 @@ async function sendRenewalReminder(subscriber, expiryDate) {
         <p style="margin:0;font-size:13px;color:#000;font-weight:700;text-align:center;">⏰ 5 days left — Renew now to stay protected</p>
       </td></tr>
       <tr><td style="background:#0a0a05;padding:40px;border:1px solid #3a2a00;border-top:none;border-bottom:none;">
-        <p style="font-size:15px;color:#ccddcc;line-height:1.8;">Hi <strong style="color:#fff;">${subscriber.name}</strong>, your premium subscription expires in <strong style="color:#ffcc00;">5 days</strong>. Renew for just <strong style="color:#00ff41;">KSh 50</strong> to stay protected.</p>
+        <p style="font-size:15px;color:#ccddcc;line-height:1.8;">Hi <strong style="color:#fff;">${subscriber.name}</strong>, your premium subscription expires in <strong style="color:#ffcc00;">5 days</strong>. Renew for just <strong style="color:#00ff41;">KSh 99</strong> to stay protected.</p>
         <table width="100%" cellpadding="0" cellspacing="0" style="margin:28px 0;">
-          <tr><td align="center"><a href="${renewUrl}" style="display:inline-block;background:#00ff41;color:#000;font-size:15px;font-weight:800;text-decoration:none;padding:16px 40px;border-radius:8px;">🔄 Renew for KSh 50 →</a></td></tr>
+          <tr><td align="center"><a href="${renewUrl}" style="display:inline-block;background:#00ff41;color:#000;font-size:15px;font-weight:800;text-decoration:none;padding:16px 40px;border-radius:8px;">🔄 Renew for KSh 99 →</a></td></tr>
         </table>
       </td></tr>
       <tr><td style="background:#030803;border:1px solid #1a3a1a;border-radius:0 0 12px 12px;padding:24px 40px;text-align:center;">
@@ -626,9 +626,9 @@ async function sendExpiryEmail(subscriber) {
         <p style="margin:0;font-size:13px;color:#fff;font-weight:700;text-align:center;">❌ You are no longer receiving scam alerts</p>
       </td></tr>
       <tr><td style="background:#0a0505;padding:40px;border:1px solid #3a1010;border-top:none;border-bottom:none;">
-        <p style="font-size:15px;color:#ccddcc;line-height:1.8;">Hi <strong style="color:#fff;">${subscriber.name}</strong>, your subscription has expired. Renew for just <strong style="color:#00ff41;">KSh 50/month</strong> to get back your protection immediately.</p>
+        <p style="font-size:15px;color:#ccddcc;line-height:1.8;">Hi <strong style="color:#fff;">${subscriber.name}</strong>, your subscription has expired. Renew for just <strong style="color:#00ff41;">KSh 99/month</strong> to get back your protection immediately.</p>
         <table width="100%" cellpadding="0" cellspacing="0" style="margin:28px 0;">
-          <tr><td align="center"><a href="${renewUrl}" style="display:inline-block;background:#00ff41;color:#000;font-size:15px;font-weight:800;text-decoration:none;padding:16px 40px;border-radius:8px;">🛡️ Renew Now — KSh 50 →</a></td></tr>
+          <tr><td align="center"><a href="${renewUrl}" style="display:inline-block;background:#00ff41;color:#000;font-size:15px;font-weight:800;text-decoration:none;padding:16px 40px;border-radius:8px;">🛡️ Renew Now — KSh 99 →</a></td></tr>
         </table>
       </td></tr>
       <tr><td style="background:#030803;border:1px solid #1a3a1a;border-radius:0 0 12px 12px;padding:24px 40px;text-align:center;">
