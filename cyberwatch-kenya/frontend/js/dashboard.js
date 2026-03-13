@@ -464,19 +464,31 @@ function closeReportModal() {
 }
 
 async function publishReport(reportId) {
-  if (!confirm('Publish this report as a public scam alert?')) return;
+  if (!confirm('Publish this report as a public scam alert? This will email ALL active subscribers.')) return;
+
+  // Show loading state on button
+  const btn = event.target;
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span> Sending...';
+
   try {
     const res = await authFetch(`${API}/subscribers/admin/reports/${reportId}/publish`, { method: 'PUT' });
     const data = await res.json();
+
     if (data.success) {
-      showToast('✅ Report published successfully!');
+      showToast(`✅ Published! Sent to ${data.sent} subscriber${data.sent !== 1 ? 's' : ''}.`);
       closeReportModal();
       loadReports();
     } else {
-      showToast('❌ Failed to publish report', 'error');
+      showToast(`❌ ${data.message || 'Failed to publish'}`, 'error');
+      btn.disabled = false;
+      btn.innerHTML = '📢 Publish as Alert';
     }
   } catch (err) {
-    showToast('❌ Server error', 'error');
+    console.error('Publish error:', err);
+    showToast('❌ Cannot connect to server', 'error');
+    btn.disabled = false;
+    btn.innerHTML = '📢 Publish as Alert';
   }
 }
 
