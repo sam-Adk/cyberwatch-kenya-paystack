@@ -64,6 +64,15 @@ const newsletterSchema = new mongoose.Schema({
   sentAt: {
     type: Date
   },
+  // Featured image URL (uploaded to Cloudinary)
+  imageUrl: {
+    type: String,
+    default: null
+  },
+  imagePublicId: {
+    type: String,
+    default: null
+  },
   // Who can receive this post — 'all', 'free', 'premium'
   audience: {
     type: String,
