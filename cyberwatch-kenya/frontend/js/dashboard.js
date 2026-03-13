@@ -329,33 +329,79 @@ async function deletePost(id) {
 }
 
 // ─────────────────────────────────────────────
-// SEND NEWSLETTER EMAIL
+// SEND NEWSLETTER — audience modal
 // ─────────────────────────────────────────────
 
-async function sendNewsletter(id) {
+let _sendingPostId = null;
+let _sendingAudience = 'all';
+
+function sendNewsletter(id) {
   const post = allPosts.find(p => p._id === id);
   if (!post) return;
 
-  const audienceLabel = {
-    'all': 'ALL subscribers (free + premium)',
-    'free': 'FREE subscribers only',
-    'premium': 'PREMIUM subscribers only'
-  }[post.audience || 'all'];
+  _sendingPostId = id;
+  _sendingAudience = 'all';
 
-  if (!confirm(`Send "${post.title}" to ${audienceLabel}?\n\nThis action cannot be undone.`)) return;
+  // Set modal title
+  document.getElementById('sendModalTitle').textContent = `"${post.title}"`;
+
+  // Reset selection to "all"
+  selectSendAudience('all');
+
+  // Show modal
+  document.getElementById('sendModal').classList.remove('hidden');
+  document.body.style.overflow = 'hidden';
+}
+
+function selectSendAudience(value) {
+  _sendingAudience = value;
+  ['all','free','premium'].forEach(v => {
+    const card = document.getElementById(`saud-${v}`);
+    if (!card) return;
+    card.style.borderColor = '';
+    card.style.background  = '';
+  });
+  const selected = document.getElementById(`saud-${value}`);
+  if (selected) {
+    selected.style.borderColor = value === 'premium' ? '#00ccff' : 'var(--green)';
+    selected.style.background  = value === 'premium' ? 'rgba(0,204,255,0.07)' : 'rgba(0,255,65,0.07)';
+  }
+}
+
+function closeSendModal() {
+  document.getElementById('sendModal').classList.add('hidden');
+  document.body.style.overflow = '';
+  _sendingPostId = null;
+}
+
+async function confirmSendNewsletter() {
+  if (!_sendingPostId) return;
+
+  const btn = document.getElementById('sendConfirmBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span> Sending...';
 
   try {
-    const res = await authFetch(`${API}/newsletters/${id}/send`, { method: 'POST' });
+    const res = await authFetch(`${API}/newsletters/${_sendingPostId}/send`, {
+      method: 'POST',
+      body: JSON.stringify({ audience: _sendingAudience })
+    });
     const data = await res.json();
 
+    closeSendModal();
+
     if (data.success) {
-      alert(`✅ ${data.message}`);
+      showToast(`✅ ${data.message}`);
       loadPosts();
+      loadDashboardStats();
     } else {
-      alert(`❌ ${data.message}`);
+      showToast(`❌ ${data.message}`, 'error');
     }
   } catch (err) {
-    alert('❌ Failed to send newsletter. Check email configuration in .env');
+    showToast('❌ Failed to send. Try again.', 'error');
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '📧 Send Now';
   }
 }
 
