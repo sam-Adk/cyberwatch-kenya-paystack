@@ -142,8 +142,8 @@ router.put('/admin/reports/:id/publish', protect, async (req, res) => {
     res.json({ success: true, message: `✅ Published! Alert sent to ${sent} subscriber${sent !== 1 ? 's' : ''}.`, sent, failed });
 
   } catch (error) {
-    console.error('Publish error:', error);
-    res.status(500).json({ success: false, message: 'Server error' });
+    console.error('Publish error full:', error.message, error.stack);
+    res.status(500).json({ success: false, message: error.message || 'Server error' });
   }
 });
 
