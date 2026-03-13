@@ -174,8 +174,8 @@ exports.sendNewsletter = async (req, res) => {
       return res.status(400).json({ success: false, message: 'This newsletter was already sent' });
     }
 
-    // Get subscribers filtered by post audience
-    const audience = newsletter.audience || 'all';
+    // Use audience from request body (chosen at send time) or fall back to post's stored audience
+    const audience = req.body.audience || newsletter.audience || 'all';
     let subscriberQuery = { active: true };
     if (audience === 'free')    subscriberQuery.plan = 'free';
     if (audience === 'premium') subscriberQuery.plan = 'premium';
