@@ -407,7 +407,7 @@ async function sendFreeWelcomeEmail(subscriber) {
           <table width="100%" cellpadding="20" style="background:rgba(0,204,255,0.05);border:1px solid rgba(0,204,255,0.2);border-radius:8px;margin-bottom:28px;">
             <tr><td>
               <p style="margin:0 0 6px;font-size:12px;color:#00ccff;letter-spacing:1px;font-family:'Courier New',monospace;">⭐ WANT MORE?</p>
-              <p style="margin:0 0 12px;font-size:14px;color:#ccddcc;line-height:1.7;">Upgrade to <strong style="color:#00ccff;">Premium for just KSh 30/month</strong> to get priority alerts, support our mission, and help us keep protecting Kenyans.</p>
+              <p style="margin:0 0 12px;font-size:14px;color:#ccddcc;line-height:1.7;">Upgrade to <strong style="color:#00ccff;">Premium for just KSh 50/month</strong> to get priority alerts, support our mission, and help us keep protecting Kenyans.</p>
               <a href="${siteUrl}/subscribe.html?upgrade=true" style="display:inline-block;background:#00ccff;color:#000;font-size:13px;font-weight:800;text-decoration:none;padding:10px 24px;border-radius:6px;">⭐ Upgrade to Premium →</a>
             </td></tr>
           </table>
