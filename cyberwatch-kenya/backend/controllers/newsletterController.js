@@ -13,7 +13,7 @@
 
 const Newsletter = require('../models/Newsletter');
 const Subscriber = require('../models/Subscriber');
-const nodemailer = require('nodemailer');
+const axios = require('axios');
 const { validationResult } = require('express-validator');
 
 // ─────────────────────────────────────────────
@@ -179,36 +179,38 @@ exports.sendNewsletter = async (req, res) => {
       return res.status(400).json({ success: false, message: 'No active subscribers found' });
     }
 
-    // Create Nodemailer transporter
-    const transporter = nodemailer.createTransport({
-      host: process.env.EMAIL_HOST,
-      port: parseInt(process.env.EMAIL_PORT) || 587,
-      secure: false,
-      auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS
-      }
-    });
-
     // Generate HTML email template
     const emailHTML = generateEmailHTML(newsletter);
 
-    // Send to each subscriber
+    // Send to each subscriber via Brevo HTTP API
     let sentCount = 0;
     const errors = [];
 
     for (const subscriber of subscribers) {
       try {
-        const unsubscribeUrl = `${req.protocol}://${req.get('host')}/api/subscribers/unsubscribe/${subscriber.unsubscribeToken}`;
+        const unsubscribeUrl = `${process.env.SITE_URL}/api/subscribers/unsubscribe/${subscriber.unsubscribeToken}`;
+        const personalizedHTML = emailHTML
+          .replace('{{UNSUBSCRIBE_URL}}', unsubscribeUrl)
+          .replace('{{SUBSCRIBER_NAME}}', subscriber.name);
 
-        await transporter.sendMail({
-          from: process.env.EMAIL_FROM || 'CyberWatch Kenya <noreply@cyberwatchkenya.com>',
-          to: subscriber.email,
-          subject: `🚨 [CyberWatch Kenya] ${newsletter.title}`,
-          html: emailHTML.replace('{{UNSUBSCRIBE_URL}}', unsubscribeUrl).replace('{{SUBSCRIBER_NAME}}', subscriber.name)
-        });
+        await axios.post(
+          'https://api.brevo.com/v3/smtp/email',
+          {
+            sender: { name: 'CyberWatch Kenya', email: 'securedatakenya@gmail.com' },
+            to: [{ email: subscriber.email, name: subscriber.name }],
+            subject: `🚨 [CyberWatch Kenya] ${newsletter.title}`,
+            htmlContent: personalizedHTML
+          },
+          {
+            headers: {
+              'api-key': process.env.BREVO_API_KEY,
+              'Content-Type': 'application/json'
+            }
+          }
+        );
         sentCount++;
       } catch (emailError) {
+        console.error(`Email failed for ${subscriber.email}:`, emailError.response?.data || emailError.message);
         errors.push({ email: subscriber.email, error: emailError.message });
       }
     }
