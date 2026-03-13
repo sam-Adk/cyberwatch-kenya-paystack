@@ -257,6 +257,47 @@
 </div>
 
 <script src="js/dashboard.js"></script>
+  <!-- SEND AUDIENCE MODAL -->
+  <div class="modal-overlay hidden" id="sendModal" onclick="if(event.target===this)closeSendModal()">
+    <div class="modal" style="max-width:420px;width:90%;padding:32px;">
+      <h2 style="margin:0 0 6px;color:#fff;font-size:1.2rem;">📧 Send Newsletter</h2>
+      <p style="margin:0 0 24px;font-size:13px;color:var(--muted);" id="sendModalTitle"></p>
+
+      <p style="font-size:13px;color:var(--muted);margin:0 0 12px;font-family:var(--font-mono);letter-spacing:1px;">WHO SHOULD RECEIVE THIS?</p>
+
+      <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:24px;">
+        <label id="saud-all" onclick="selectSendAudience('all')" style="border:2px solid var(--border);border-radius:8px;padding:14px 16px;cursor:pointer;display:flex;align-items:center;gap:14px;transition:all 0.2s;">
+          <span style="font-size:24px;">📡</span>
+          <div>
+            <div style="font-size:14px;font-weight:700;color:#fff;">Everyone</div>
+            <div style="font-size:12px;color:var(--muted);">Send to all active subscribers (free + premium)</div>
+          </div>
+        </label>
+        <label id="saud-free" onclick="selectSendAudience('free')" style="border:2px solid var(--border);border-radius:8px;padding:14px 16px;cursor:pointer;display:flex;align-items:center;gap:14px;transition:all 0.2s;">
+          <span style="font-size:24px;">🆓</span>
+          <div>
+            <div style="font-size:14px;font-weight:700;color:#fff;">Free subscribers only</div>
+            <div style="font-size:12px;color:var(--muted);">Only send to free plan members</div>
+          </div>
+        </label>
+        <label id="saud-premium" onclick="selectSendAudience('premium')" style="border:2px solid var(--border);border-radius:8px;padding:14px 16px;cursor:pointer;display:flex;align-items:center;gap:14px;transition:all 0.2s;">
+          <span style="font-size:24px;">⭐</span>
+          <div>
+            <div style="font-size:14px;font-weight:700;color:#00ccff;">Premium subscribers only</div>
+            <div style="font-size:12px;color:var(--muted);">Only send to paid premium members</div>
+          </div>
+        </label>
+      </div>
+
+      <div style="display:flex;gap:10px;">
+        <button class="btn btn-primary" id="sendConfirmBtn" onclick="confirmSendNewsletter()" style="flex:1;">
+          📧 Send Now
+        </button>
+        <button class="btn btn-outline" onclick="closeSendModal()">Cancel</button>
+      </div>
+    </div>
+  </div>
+
   <!-- REPORT DETAIL MODAL -->
   <div class="modal-overlay hidden" id="reportModal" onclick="if(event.target===this)closeReportModal()">
     <div class="modal" id="reportModalContent" style="max-width:640px; width:90%; max-height:85vh; overflow-y:auto;">
