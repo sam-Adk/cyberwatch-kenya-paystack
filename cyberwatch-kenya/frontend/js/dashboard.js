@@ -612,6 +612,33 @@ function showToast(message, type = 'success') {
   setTimeout(() => toast.remove(), 3000);
 }
 
+// ─────────────────────────────────────────────
+// SEND WEEKLY DIGEST MANUALLY
+// ─────────────────────────────────────────────
+
+async function sendTestDigest() {
+  if (!confirm('Send the Weekly Digest NOW to all premium subscribers?\n\nThis will email a summary of the past 7 days\' alerts.')) return;
+
+  const btn = event.target;
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span> Sending...';
+
+  try {
+    const res  = await authFetch(`${API}/newsletters/admin/send-digest`, { method: 'POST' });
+    const data = await res.json();
+    if (data.success) {
+      showToast('⭐ ' + data.message);
+    } else {
+      showToast('❌ ' + data.message, 'error');
+    }
+  } catch (err) {
+    showToast('❌ Failed to send digest', 'error');
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '⭐ Send Weekly Digest Now';
+  }
+}
+
 function logout() {
   if (confirm('Logout from the dashboard?')) {
     localStorage.removeItem('cwk_token');
