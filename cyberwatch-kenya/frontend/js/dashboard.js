@@ -367,6 +367,11 @@ async function loadReports() {
         </td>
         <td><span class="status-badge ${r.status === 'published' ? 'status-published' : 'status-draft'}">${r.status}</span></td>
         <td class="font-mono" style="font-size:11px; color:var(--muted);">${new Date(r.createdAt).toLocaleDateString('en-KE')}</td>
+        <td>
+          <button class="btn btn-outline btn-sm" onclick="viewReport(${JSON.stringify(r).split('`').join('')})" style="font-size:11px; padding:4px 10px;">
+            👁 View
+          </button>
+        </td>
       </tr>
     `).join('');
 
@@ -378,6 +383,112 @@ async function loadReports() {
 // ─────────────────────────────────────────────
 // LOGOUT
 // ─────────────────────────────────────────────
+
+// ─────────────────────────────────────────────
+// VIEW REPORT MODAL
+// ─────────────────────────────────────────────
+
+function viewReport(r) {
+  const modal = document.getElementById('reportModal');
+  const content = document.getElementById('reportModalContent');
+
+  const amountText = r.amountLost > 0
+    ? `<span style="color:var(--red); font-weight:700;">KSh ${Number(r.amountLost).toLocaleString()}</span>`
+    : '<span style="color:var(--muted);">None reported</span>';
+
+  content.innerHTML = `
+    <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:24px;">
+      <div>
+        <h2 style="margin:0 0 6px; color:#fff; font-size:1.3rem;">Scam Report Details</h2>
+        <span class="category-badge ${getCategoryClass(r.scamType)}">${r.scamType}</span>
+      </div>
+      <span class="status-badge ${r.status === 'published' ? 'status-published' : 'status-draft'}">${r.status}</span>
+    </div>
+
+    <!-- Reporter Info -->
+    <div style="background:var(--surface2); border:1px solid var(--border); border-radius:var(--radius); padding:20px; margin-bottom:16px;">
+      <div style="font-family:var(--font-mono); font-size:11px; color:var(--green); letter-spacing:2px; margin-bottom:12px;">REPORTER INFO</div>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+        <div>
+          <div style="font-size:11px; color:var(--muted); margin-bottom:3px;">NAME</div>
+          <div style="color:#fff; font-weight:600;">${escapeHTML(r.reporterName)}</div>
+        </div>
+        <div>
+          <div style="font-size:11px; color:var(--muted); margin-bottom:3px;">EMAIL</div>
+          <div style="color:#fff;">${escapeHTML(r.reporterEmail || 'Not provided')}</div>
+        </div>
+        <div>
+          <div style="font-size:11px; color:var(--muted); margin-bottom:3px;">PLATFORM</div>
+          <div style="color:#fff;">${escapeHTML(r.platform || 'Not specified')}</div>
+        </div>
+        <div>
+          <div style="font-size:11px; color:var(--muted); margin-bottom:3px;">AMOUNT LOST</div>
+          <div>${amountText}</div>
+        </div>
+        <div>
+          <div style="font-size:11px; color:var(--muted); margin-bottom:3px;">DATE REPORTED</div>
+          <div style="color:#fff; font-family:var(--font-mono); font-size:13px;">${new Date(r.createdAt).toLocaleDateString('en-KE', { day:'numeric', month:'long', year:'numeric' })}</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Description -->
+    <div style="background:var(--surface2); border:1px solid var(--border); border-radius:var(--radius); padding:20px; margin-bottom:16px;">
+      <div style="font-family:var(--font-mono); font-size:11px; color:var(--green); letter-spacing:2px; margin-bottom:12px;">HOW THE SCAM HAPPENED</div>
+      <p style="margin:0; color:#ccc; line-height:1.8; font-size:14px; white-space:pre-wrap;">${escapeHTML(r.description)}</p>
+    </div>
+
+    <!-- Actions -->
+    <div style="display:flex; gap:12px; margin-top:8px;">
+      <button class="btn btn-primary" onclick="publishReport('${r._id}')">
+        📢 Publish as Alert
+      </button>
+      <button class="btn btn-outline" onclick="closeReportModal()">
+        Close
+      </button>
+    </div>
+  `;
+
+  modal.classList.remove('hidden');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeReportModal() {
+  document.getElementById('reportModal').classList.add('hidden');
+  document.body.style.overflow = '';
+}
+
+async function publishReport(reportId) {
+  if (!confirm('Publish this report as a public scam alert?')) return;
+  try {
+    const res = await authFetch(`${API}/subscribers/admin/reports/${reportId}/publish`, { method: 'PUT' });
+    const data = await res.json();
+    if (data.success) {
+      showToast('✅ Report published successfully!');
+      closeReportModal();
+      loadReports();
+    } else {
+      showToast('❌ Failed to publish report', 'error');
+    }
+  } catch (err) {
+    showToast('❌ Server error', 'error');
+  }
+}
+
+function showToast(message, type = 'success') {
+  const toast = document.createElement('div');
+  toast.style.cssText = `
+    position:fixed; bottom:24px; right:24px; z-index:9999;
+    background:${type === 'error' ? '#ff2244' : '#00ff41'};
+    color:${type === 'error' ? '#fff' : '#000'};
+    padding:12px 24px; border-radius:8px; font-weight:700;
+    font-size:14px; box-shadow:0 4px 20px rgba(0,0,0,0.5);
+    animation: slideIn 0.3s ease;
+  `;
+  toast.textContent = message;
+  document.body.appendChild(toast);
+  setTimeout(() => toast.remove(), 3000);
+}
 
 function logout() {
   if (confirm('Logout from the dashboard?')) {
