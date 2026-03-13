@@ -344,28 +344,40 @@ async function submitScamReport() {
 
 async function loadStats() {
   try {
-    const [postsRes] = await Promise.all([
-      fetch(`${API}/newsletters?limit=1`)
+    const [postsRes, subsRes, reportsRes] = await Promise.all([
+      fetch(`${API}/newsletters?limit=1`),
+      fetch(`${API}/subscribers/count`),
+      fetch(`${API}/subscribers/reports/count`)
     ]);
-    const postsData = await postsRes.json();
 
-    if (postsData.success) {
-      animateCounter('statPosts', postsData.total);
-    }
+    const postsData    = await postsRes.json();
+    const subsData     = await subsRes.json().catch(() => ({ count: 0 }));
+    const reportsData  = await reportsRes.json().catch(() => ({ count: 0 }));
 
-    // Subscriber count is protected, so we show a placeholder
-    animateCounter('statSubscribers', 1200); // example
+    if (postsData.success)  animateCounter('statPosts',        postsData.total  || 0);
+    if (subsData.success)   animateCounter('statSubscribers',  subsData.count   || 0);
+
+    // Also update the new social proof stats if they exist on the page
+    const proSubs    = document.getElementById('proStatSubs');
+    const proAlerts  = document.getElementById('proStatAlerts');
+    const proReports = document.getElementById('proStatReports');
+
+    if (proSubs)    animateCounter('proStatSubs',    subsData.count    || 0, '+');
+    if (proAlerts)  animateCounter('proStatAlerts',  postsData.total   || 0, '+');
+    if (proReports) animateCounter('proStatReports', reportsData.count || 0, '+');
+
   } catch (e) { /* silent fail */ }
 }
 
-function animateCounter(id, target) {
+function animateCounter(id, target, suffix = '') {
   const el = document.getElementById(id);
   if (!el) return;
+  if (target === 0) { el.textContent = '0' + suffix; return; }
   let count = 0;
-  const step = Math.ceil(target / 40);
+  const step = Math.max(1, Math.ceil(target / 50));
   const interval = setInterval(() => {
     count = Math.min(count + step, target);
-    el.textContent = count.toLocaleString();
+    el.textContent = count.toLocaleString() + suffix;
     if (count >= target) clearInterval(interval);
   }, 30);
 }
