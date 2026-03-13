@@ -63,6 +63,12 @@ const newsletterSchema = new mongoose.Schema({
   },
   sentAt: {
     type: Date
+  },
+  // Who can receive this post — 'all', 'free', 'premium'
+  audience: {
+    type: String,
+    enum: ['all', 'free', 'premium'],
+    default: 'all'
   }
 }, {
   timestamps: true
