@@ -146,23 +146,36 @@ async function loadPosts() {
       return;
     }
 
-    tbody.innerHTML = allPosts.map(post => `
+    tbody.innerHTML = allPosts.map(post => {
+      const audienceLabel = {
+        'all':     '<span style="background:rgba(0,255,65,0.15);color:#00ff41;font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;">📡 All</span>',
+        'free':    '<span style="background:rgba(100,200,100,0.15);color:#88cc88;font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;">🆓 Free</span>',
+        'premium': '<span style="background:rgba(0,204,255,0.15);color:#00ccff;font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;">⭐ Premium</span>'
+      }[post.audience || 'all'];
+
+      const sendBtn = !post.sentToSubscribers
+        ? `<button class="btn btn-outline btn-sm" onclick="sendNewsletter('${post._id}')" title="Send to ${post.audience === 'premium' ? 'premium' : post.audience === 'free' ? 'free' : 'all'} subscribers">📧 Send</button>`
+        : '<span style="font-size:11px; color:var(--muted);">✅ Sent</span>';
+
+      return `
       <tr>
-        <td style="max-width:280px; font-weight:600;">${escapeHTML(post.title)}</td>
+        <td style="max-width:240px; font-weight:600;">${escapeHTML(post.title)}</td>
         <td><span class="category-badge ${getCategoryClass(post.category)}">${post.category}</span></td>
+        <td>${audienceLabel}</td>
         <td><span class="status-badge ${post.published ? 'status-published' : 'status-draft'}">${post.published ? 'Published' : 'Draft'}</span></td>
         <td class="font-mono" style="font-size:11px; color:var(--muted);">${new Date(post.createdAt).toLocaleDateString('en-KE')}</td>
         <td>
-          <div style="display:flex; gap:8px; flex-wrap:wrap;">
+          <div style="display:flex; gap:6px; flex-wrap:wrap; align-items:center;">
             <button class="btn btn-outline btn-sm" onclick="editPost('${post._id}')">✏️</button>
             <button class="btn btn-outline btn-sm" onclick="togglePublish('${post._id}', ${post.published})" title="${post.published ? 'Unpublish' : 'Publish'}">
               ${post.published ? '🙈' : '📢'}
             </button>
-            ${!post.sentToSubscribers ? `<button class="btn btn-outline btn-sm" onclick="sendNewsletter('${post._id}')" title="Send to subscribers">📧</button>` : '<span style="font-size:11px; color:var(--muted);">✅ Sent</span>'}
+            ${sendBtn}
             <button class="btn btn-danger btn-sm" onclick="deletePost('${post._id}')">🗑️</button>
           </div>
         </td>
-      </tr>
+      </tr>`;
+    }).join('');
     `).join('');
 
   } catch (err) {
@@ -182,6 +195,7 @@ async function savePost() {
   const tagsStr = document.getElementById('postTags').value.trim();
   const author = document.getElementById('postAuthor').value.trim();
   const published = document.getElementById('postPublished').checked;
+  const audience = document.querySelector('input[name="postAudience"]:checked')?.value || 'all';
   const alertBox = document.getElementById('postFormAlert');
   const btn = document.getElementById('savePostBtn');
 
@@ -192,7 +206,7 @@ async function savePost() {
   if (!description) { alertBox.innerHTML = '<div class="alert alert-error">Content is required.</div>'; return; }
 
   const tags = tagsStr ? tagsStr.split(',').map(t => t.trim()).filter(Boolean) : [];
-  const body = { title, category, description, author, published, tags };
+  const body = { title, category, description, author, published, tags, audience };
 
   btn.disabled = true;
   btn.innerHTML = '<span class="spinner"></span> Saving...';
@@ -236,6 +250,9 @@ function editPost(id) {
   document.getElementById('postTags').value = (post.tags || []).join(', ');
   document.getElementById('postAuthor').value = post.author;
   document.getElementById('postPublished').checked = post.published;
+  // Set audience radio
+  const audRadio = document.querySelector(`input[name="postAudience"][value="${post.audience || 'all'}"]`);
+  if (audRadio) audRadio.click();
   document.getElementById('postFormTitle').textContent = 'Edit Post';
 
   showTab('newpost', null);
@@ -250,6 +267,8 @@ function clearPostForm() {
   document.getElementById('postTags').value = '';
   document.getElementById('postAuthor').value = 'CyberWatch Kenya Team';
   document.getElementById('postPublished').checked = false;
+  const allRadio = document.querySelector('input[name="postAudience"][value="all"]');
+  if (allRadio) allRadio.click();
   document.getElementById('postFormTitle').textContent = 'New Post';
   document.getElementById('postFormAlert').innerHTML = '';
 }
@@ -298,7 +317,13 @@ async function sendNewsletter(id) {
   const post = allPosts.find(p => p._id === id);
   if (!post) return;
 
-  if (!confirm(`Send "${post.title}" to all active subscribers?\n\nThis action cannot be undone.`)) return;
+  const audienceLabel = {
+    'all': 'ALL subscribers (free + premium)',
+    'free': 'FREE subscribers only',
+    'premium': 'PREMIUM subscribers only'
+  }[post.audience || 'all'];
+
+  if (!confirm(`Send "${post.title}" to ${audienceLabel}?\n\nThis action cannot be undone.`)) return;
 
   try {
     const res = await authFetch(`${API}/newsletters/${id}/send`, { method: 'POST' });
