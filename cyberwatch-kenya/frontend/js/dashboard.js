@@ -81,6 +81,11 @@ function showTab(name, linkEl) {
   // Update sidebar active state
   document.querySelectorAll('.sidebar-nav a').forEach(a => a.classList.remove('active'));
   if (linkEl) linkEl.classList.add('active');
+
+  // Always reload fresh data when switching tabs
+  if (name === 'subscribers') loadSubscribers();
+  if (name === 'reports')     loadReports();
+  if (name === 'overview')    loadDashboardStats();
 }
 
 // ─────────────────────────────────────────────
@@ -102,9 +107,13 @@ async function loadDashboardStats() {
     const posts = postsData.data || [];
     const published = posts.filter(p => p.published).length;
 
+    const allSubs    = subsData.data || [];
+    const activeSubs = allSubs.filter(s => s.active).length;
+    const premiumSubs = allSubs.filter(s => s.plan === 'premium' && s.active).length;
+
     document.getElementById('totalPosts').textContent = posts.length;
     document.getElementById('publishedPosts').textContent = published;
-    document.getElementById('totalSubs').textContent = subsData.total || 0;
+    document.getElementById('totalSubs').textContent = `${activeSubs} active`;
     document.getElementById('totalReports').textContent = (reportsData.data || []).length;
 
     // Also update homepage stats if elements exist
