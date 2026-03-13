@@ -108,7 +108,8 @@ exports.createNewsletter = async (req, res) => {
       category,
       author: author || req.user.name,
       published: published || false,
-      tags: tags || []
+      tags: tags || [],
+      audience: audience || 'all'
     });
 
     res.status(201).json({ success: true, data: newsletter });
