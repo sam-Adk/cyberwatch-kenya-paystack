@@ -25,7 +25,6 @@ const crypto = require('crypto');
 const moment = require('moment');
 const Subscriber = require('../models/Subscriber');
 const Subscription = require('../models/Subscription');
-const nodemailer = require('nodemailer');
 
 const PAYSTACK_SECRET = process.env.PAYSTACK_SECRET_KEY;
 const SUBSCRIPTION_AMOUNT = 30; // KSh 30
@@ -392,19 +391,26 @@ exports.processExpirations = async () => {
 };
 
 // ─────────────────────────────────────────────
-// EMAIL FUNCTIONS
+// ─────────────────────────────────────────────
+// EMAIL FUNCTIONS — all use Brevo HTTP API
 // ─────────────────────────────────────────────
 
-async function getTransporter() {
-  return nodemailer.createTransport({
-    host: process.env.EMAIL_HOST,
-    port: parseInt(process.env.EMAIL_PORT) || 587,
-    secure: false,
-    auth: {
-      user: process.env.EMAIL_USER,
-      pass: process.env.EMAIL_PASS
+async function sendBrevoEmail({ to, toName, subject, html }) {
+  await axios.post(
+    'https://api.brevo.com/v3/smtp/email',
+    {
+      sender: { name: 'CyberWatch Kenya', email: 'securedatakenya@gmail.com' },
+      to: [{ email: to, name: toName }],
+      subject,
+      htmlContent: html
+    },
+    {
+      headers: {
+        'api-key': process.env.BREVO_API_KEY,
+        'Content-Type': 'application/json'
+      }
     }
-  });
+  );
 }
 
 async function sendWelcomeEmail(subscriberId, reference, expiryDate) {
@@ -412,333 +418,229 @@ async function sendWelcomeEmail(subscriberId, reference, expiryDate) {
     const subscriber = await Subscriber.findById(subscriberId);
     if (!subscriber) return;
 
-    const transporter = await getTransporter();
     const firstName = subscriber.name.split(' ')[0];
     const expiryFormatted = moment(expiryDate).format('Do MMMM YYYY');
+    const siteUrl = process.env.SITE_URL || 'http://localhost:5000';
 
-    await transporter.sendMail({
-      from: process.env.EMAIL_FROM,
+    await sendBrevoEmail({
       to: subscriber.email,
-      subject: `🛡️ Welcome to CyberWatch Kenya, ${firstName}! You're now protected.`,
-      html: `
-<!DOCTYPE html>
+      toName: subscriber.name,
+      subject: `🛡️ Welcome to CyberWatch Kenya, ${firstName}! You're now a Premium member.`,
+      html: `<!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Welcome to CyberWatch Kenya</title>
-</head>
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"></head>
 <body style="margin:0;padding:0;background-color:#050a05;font-family:Arial,Helvetica,sans-serif;">
+<table width="100%" cellpadding="0" cellspacing="0" style="background-color:#050a05;padding:40px 0;">
+  <tr><td align="center">
+    <table width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;">
 
-  <!-- WRAPPER -->
-  <table width="100%" cellpadding="0" cellspacing="0" style="background-color:#050a05;padding:40px 0;">
-    <tr>
-      <td align="center">
-        <table width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;">
+      <!-- HEADER -->
+      <tr>
+        <td style="background:linear-gradient(135deg,#0a1000 0%,#1a1f00 50%,#0a1000 100%);border-radius:12px 12px 0 0;padding:48px 40px 40px;text-align:center;border:1px solid #2a3a00;border-bottom:none;">
+          <div style="background:rgba(0,204,255,0.1);border:2px solid rgba(0,204,255,0.5);border-radius:50%;width:80px;height:80px;line-height:80px;font-size:40px;margin:0 auto 20px;">⭐</div>
+          <h1 style="margin:0 0 4px;font-size:28px;font-weight:800;color:#ffffff;">CyberWatch <span style="color:#00ff41;">Kenya</span></h1>
+          <p style="margin:0 0 20px;font-size:12px;color:#00ccff;letter-spacing:3px;font-family:'Courier New',monospace;">PREMIUM MEMBER</p>
+          <div style="display:inline-block;background:#00ccff;color:#000;font-size:12px;font-weight:800;padding:6px 20px;border-radius:20px;letter-spacing:1px;margin-bottom:20px;">⭐ PREMIUM SUBSCRIBER</div>
+          <h2 style="margin:0 0 12px;font-size:24px;color:#ffffff;font-weight:700;">Welcome, ${firstName}! 🎉</h2>
+          <p style="margin:0;font-size:16px;color:#aaccdd;line-height:1.6;">Thank you for supporting CyberWatch Kenya.<br>Your premium subscription is now active.</p>
+        </td>
+      </tr>
 
-          <!-- ═══ HEADER ═══ -->
-          <tr>
-            <td style="background:linear-gradient(135deg,#0a1a0a 0%,#0d2010 50%,#0a1a0a 100%);border-radius:12px 12px 0 0;padding:48px 40px 40px;text-align:center;border:1px solid #1a3a1a;border-bottom:none;">
+      <!-- CYAN BAND -->
+      <tr>
+        <td style="background:#00ccff;padding:14px 40px;border-left:1px solid #2a3a00;border-right:1px solid #2a3a00;">
+          <p style="margin:0;font-size:13px;color:#000;font-weight:800;text-align:center;letter-spacing:1px;">⭐ PREMIUM &nbsp;|&nbsp; PRIORITY ALERTS &nbsp;|&nbsp; SUPPORTING KENYA'S CYBERSECURITY</p>
+        </td>
+      </tr>
 
-              <!-- Shield Logo -->
-              <div style="display:inline-block;background:rgba(0,255,65,0.1);border:2px solid rgba(0,255,65,0.4);border-radius:50%;width:80px;height:80px;line-height:80px;font-size:40px;margin-bottom:20px;">🛡️</div>
+      <!-- BODY -->
+      <tr>
+        <td style="background:#0a1205;padding:40px;border:1px solid #2a3a00;border-top:none;border-bottom:none;">
 
-              <!-- Brand -->
-              <h1 style="margin:0 0 4px;font-size:28px;font-weight:800;color:#ffffff;letter-spacing:-0.5px;">
-                CyberWatch <span style="color:#00ff41;">Kenya</span>
-              </h1>
-              <p style="margin:0 0 24px;font-size:12px;color:#00ff41;letter-spacing:3px;font-family:'Courier New',monospace;">
-                CYBERSECURITY INTELLIGENCE
-              </p>
-
-              <!-- Green divider -->
-              <div style="width:60px;height:3px;background:linear-gradient(90deg,transparent,#00ff41,transparent);margin:0 auto 28px;"></div>
-
-              <!-- Welcome headline -->
-              <h2 style="margin:0 0 12px;font-size:24px;color:#ffffff;font-weight:700;">
-                Welcome aboard, ${firstName}! 🎉
-              </h2>
-              <p style="margin:0;font-size:16px;color:#aad4aa;line-height:1.6;">
-                You are now officially protected by Kenya's most trusted<br>cybersecurity alert network.
-              </p>
-            </td>
-          </tr>
-
-          <!-- ═══ ABOUT US BAND ═══ -->
-          <tr>
-            <td style="background:#00ff41;padding:16px 40px;border-left:1px solid #1a3a1a;border-right:1px solid #1a3a1a;">
-              <p style="margin:0;font-size:13px;color:#000000;font-weight:700;text-align:center;letter-spacing:1px;">
-                🔒 TRUSTED BY KENYANS &nbsp;|&nbsp; 24/7 MONITORING &nbsp;|&nbsp; REAL-TIME ALERTS
-              </p>
-            </td>
-          </tr>
-
-          <!-- ═══ MAIN BODY ═══ -->
-          <tr>
-            <td style="background:#0a150a;padding:40px;border:1px solid #1a3a1a;border-top:none;border-bottom:none;">
-
-              <!-- Who we are -->
-              <h3 style="margin:0 0 16px;font-size:18px;color:#00ff41;font-family:'Courier New',monospace;letter-spacing:1px;">
-                // WHO WE ARE
-              </h3>
-              <p style="margin:0 0 16px;font-size:15px;color:#ccddcc;line-height:1.8;">
-                <strong style="color:#ffffff;">CyberWatch Kenya</strong> is a cybersecurity intelligence platform dedicated to protecting Kenyans from online scams, phishing attacks, mobile money fraud, and digital threats.
-              </p>
-              <p style="margin:0 0 32px;font-size:15px;color:#ccddcc;line-height:1.8;">
-                Our team monitors the digital landscape <strong style="color:#00ff41;">24 hours a day, 7 days a week</strong> — tracking emerging scams, exposing fraudsters, and delivering actionable alerts so you can stay one step ahead of cybercriminals.
-              </p>
-
-              <!-- What you'll receive -->
-              <h3 style="margin:0 0 20px;font-size:18px;color:#00ff41;font-family:'Courier New',monospace;letter-spacing:1px;">
-                // WHAT YOU'LL RECEIVE
-              </h3>
-
-              <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:32px;">
+          <h3 style="margin:0 0 16px;font-size:16px;color:#00ccff;font-family:'Courier New',monospace;letter-spacing:1px;">// YOUR PREMIUM BENEFITS</h3>
+          <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:28px;">
+            <tr><td style="padding:0 0 10px;">
+              <table width="100%" cellpadding="14" style="background:#0d1f10;border:1px solid #1e3a20;border-radius:8px;">
                 <tr>
-                  <td style="padding:0 0 12px;">
-                    <table width="100%" cellpadding="0" cellspacing="0" style="background:#0d1f0d;border:1px solid #1e3a1e;border-radius:8px;padding:16px;">
-                      <tr>
-                        <td width="44" style="font-size:28px;vertical-align:middle;padding:0 16px 0 4px;">🚨</td>
-                        <td style="vertical-align:middle;">
-                          <p style="margin:0 0 2px;font-size:14px;font-weight:700;color:#ffffff;">Real-Time Scam Alerts</p>
-                          <p style="margin:0;font-size:13px;color:#88aa88;">Instant email the moment a new threat is detected targeting Kenyans</p>
-                        </td>
-                      </tr>
-                    </table>
-                  </td>
-                </tr>
-                <tr>
-                  <td style="padding:0 0 12px;">
-                    <table width="100%" cellpadding="0" cellspacing="0" style="background:#0d1f0d;border:1px solid #1e3a1e;border-radius:8px;padding:16px;">
-                      <tr>
-                        <td width="44" style="font-size:28px;vertical-align:middle;padding:0 16px 0 4px;">📱</td>
-                        <td style="vertical-align:middle;">
-                          <p style="margin:0 0 2px;font-size:14px;font-weight:700;color:#ffffff;">M-PESA Fraud Warnings</p>
-                          <p style="margin:0;font-size:13px;color:#88aa88;">SIM swap attacks, fake Safaricom agents, and mobile money scams</p>
-                        </td>
-                      </tr>
-                    </table>
-                  </td>
-                </tr>
-                <tr>
-                  <td style="padding:0 0 12px;">
-                    <table width="100%" cellpadding="0" cellspacing="0" style="background:#0d1f0d;border:1px solid #1e3a1e;border-radius:8px;padding:16px;">
-                      <tr>
-                        <td width="44" style="font-size:28px;vertical-align:middle;padding:0 16px 0 4px;">💼</td>
-                        <td style="vertical-align:middle;">
-                          <p style="margin:0 0 2px;font-size:14px;font-weight:700;color:#ffffff;">Job & Investment Scam Alerts</p>
-                          <p style="margin:0;font-size:13px;color:#88aa88;">Fake recruiters, pyramid schemes, and crypto fraud targeting Kenyans</p>
-                        </td>
-                      </tr>
-                    </table>
-                  </td>
-                </tr>
-                <tr>
-                  <td style="padding:0 0 12px;">
-                    <table width="100%" cellpadding="0" cellspacing="0" style="background:#0d1f0d;border:1px solid #1e3a1e;border-radius:8px;padding:16px;">
-                      <tr>
-                        <td width="44" style="font-size:28px;vertical-align:middle;padding:0 16px 0 4px;">🔐</td>
-                        <td style="vertical-align:middle;">
-                          <p style="margin:0 0 2px;font-size:14px;font-weight:700;color:#ffffff;">Weekly Cybersecurity Tips</p>
-                          <p style="margin:0;font-size:13px;color:#88aa88;">Practical advice to secure your devices, accounts, and personal data</p>
-                        </td>
-                      </tr>
-                    </table>
-                  </td>
-                </tr>
-                <tr>
-                  <td>
-                    <table width="100%" cellpadding="0" cellspacing="0" style="background:#0d1f0d;border:1px solid #1e3a1e;border-radius:8px;padding:16px;">
-                      <tr>
-                        <td width="44" style="font-size:28px;vertical-align:middle;padding:0 16px 0 4px;">🌍</td>
-                        <td style="vertical-align:middle;">
-                          <p style="margin:0 0 2px;font-size:14px;font-weight:700;color:#ffffff;">East Africa Coverage</p>
-                          <p style="margin:0;font-size:13px;color:#88aa88;">Threats affecting Kenya, Uganda, Tanzania, and the wider region</p>
-                        </td>
-                      </tr>
-                    </table>
-                  </td>
+                  <td width="40" style="font-size:24px;vertical-align:middle;padding-right:12px;">🚨</td>
+                  <td style="vertical-align:middle;padding:0;"><p style="margin:0 0 2px;font-size:14px;font-weight:700;color:#fff;">Priority Scam Alerts</p><p style="margin:0;font-size:12px;color:#88aa88;">You get alerts before free subscribers</p></td>
                 </tr>
               </table>
-
-              <!-- Payment receipt box -->
-              <h3 style="margin:0 0 16px;font-size:18px;color:#00ff41;font-family:'Courier New',monospace;letter-spacing:1px;">
-                // YOUR SUBSCRIPTION DETAILS
-              </h3>
-              <table width="100%" cellpadding="0" cellspacing="0" style="background:#050f05;border:1px solid #00ff41;border-radius:8px;overflow:hidden;margin-bottom:32px;">
+            </td></tr>
+            <tr><td style="padding:0 0 10px;">
+              <table width="100%" cellpadding="14" style="background:#0d1f10;border:1px solid #1e3a20;border-radius:8px;">
                 <tr>
-                  <td style="background:rgba(0,255,65,0.1);padding:12px 20px;border-bottom:1px solid #1a3a1a;">
-                    <p style="margin:0;font-size:11px;color:#00ff41;letter-spacing:2px;font-family:'Courier New',monospace;">PAYMENT CONFIRMED ✓</p>
-                  </td>
-                </tr>
-                <tr>
-                  <td style="padding:20px;">
-                    <table width="100%" cellpadding="0" cellspacing="0">
-                      <tr>
-                        <td style="padding:8px 0;border-bottom:1px solid #1a3a1a;">
-                          <span style="font-size:13px;color:#88aa88;">Status</span>
-                        </td>
-                        <td style="padding:8px 0;border-bottom:1px solid #1a3a1a;text-align:right;">
-                          <span style="font-size:13px;color:#00ff41;font-weight:700;">🟢 ACTIVE</span>
-                        </td>
-                      </tr>
-                      <tr>
-                        <td style="padding:8px 0;border-bottom:1px solid #1a3a1a;">
-                          <span style="font-size:13px;color:#88aa88;">Reference</span>
-                        </td>
-                        <td style="padding:8px 0;border-bottom:1px solid #1a3a1a;text-align:right;">
-                          <span style="font-size:13px;color:#ffffff;font-family:'Courier New',monospace;">${reference}</span>
-                        </td>
-                      </tr>
-                      <tr>
-                        <td style="padding:8px 0;border-bottom:1px solid #1a3a1a;">
-                          <span style="font-size:13px;color:#88aa88;">Amount Paid</span>
-                        </td>
-                        <td style="padding:8px 0;border-bottom:1px solid #1a3a1a;text-align:right;">
-                          <span style="font-size:13px;color:#ffffff;font-weight:700;">KSh 30</span>
-                        </td>
-                      </tr>
-                      <tr>
-                        <td style="padding:8px 0;border-bottom:1px solid #1a3a1a;">
-                          <span style="font-size:13px;color:#88aa88;">Subscriber</span>
-                        </td>
-                        <td style="padding:8px 0;border-bottom:1px solid #1a3a1a;text-align:right;">
-                          <span style="font-size:13px;color:#ffffff;">${subscriber.name}</span>
-                        </td>
-                      </tr>
-                      <tr>
-                        <td style="padding:8px 0;">
-                          <span style="font-size:13px;color:#88aa88;">Valid Until</span>
-                        </td>
-                        <td style="padding:8px 0;text-align:right;">
-                          <span style="font-size:13px;color:#00ff41;font-weight:700;">${expiryFormatted}</span>
-                        </td>
-                      </tr>
-                    </table>
-                  </td>
+                  <td width="40" style="font-size:24px;vertical-align:middle;padding-right:12px;">📱</td>
+                  <td style="vertical-align:middle;padding:0;"><p style="margin:0 0 2px;font-size:14px;font-weight:700;color:#fff;">M-PESA Fraud Warnings</p><p style="margin:0;font-size:12px;color:#88aa88;">SIM swap, fake agents, mobile money scams</p></td>
                 </tr>
               </table>
-
-              <!-- CTA Button -->
-              <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:32px;">
+            </td></tr>
+            <tr><td style="padding:0 0 10px;">
+              <table width="100%" cellpadding="14" style="background:#0d1f10;border:1px solid #1e3a20;border-radius:8px;">
                 <tr>
-                  <td align="center">
-                    <a href="${process.env.SITE_URL || 'http://localhost:5000'}"
-                      style="display:inline-block;background:#00ff41;color:#000000;font-size:15px;font-weight:800;text-decoration:none;padding:16px 40px;border-radius:8px;letter-spacing:0.5px;">
-                      🛡️ Visit CyberWatch Kenya →
-                    </a>
-                  </td>
+                  <td width="40" style="font-size:24px;vertical-align:middle;padding-right:12px;">🌍</td>
+                  <td style="vertical-align:middle;padding:0;"><p style="margin:0 0 2px;font-size:14px;font-weight:700;color:#fff;">East Africa Coverage</p><p style="margin:0;font-size:12px;color:#88aa88;">Kenya, Uganda, Tanzania and the wider region</p></td>
                 </tr>
               </table>
-
-              <!-- Security tip of the day -->
-              <table width="100%" cellpadding="0" cellspacing="0" style="background:linear-gradient(135deg,#0a1a0a,#0d2010);border:1px solid #1e3a1e;border-left:4px solid #00ff41;border-radius:0 8px 8px 0;padding:20px;margin-bottom:8px;">
+            </td></tr>
+            <tr><td>
+              <table width="100%" cellpadding="14" style="background:#0d1520;border:1px solid #1e2a3a;border-radius:8px;border-left:4px solid #00ccff;">
                 <tr>
-                  <td>
-                    <p style="margin:0 0 8px;font-size:11px;color:#00ff41;letter-spacing:2px;font-family:'Courier New',monospace;">💡 SECURITY TIP</p>
-                    <p style="margin:0;font-size:14px;color:#ccddcc;line-height:1.7;">
-                      <strong style="color:#fff;">Never share your M-PESA PIN</strong> with anyone — not even someone claiming to be from Safaricom. Safaricom will <em>never</em> call you asking for your PIN or OTP code.
-                    </p>
-                  </td>
+                  <td width="40" style="font-size:24px;vertical-align:middle;padding-right:12px;">💙</td>
+                  <td style="vertical-align:middle;padding:0;"><p style="margin:0 0 2px;font-size:14px;font-weight:700;color:#00ccff;">Thank You for Supporting Us</p><p style="margin:0;font-size:12px;color:#88aa88;">Your KSh 30 helps us keep protecting Kenyans</p></td>
                 </tr>
               </table>
+            </td></tr>
+          </table>
 
-            </td>
-          </tr>
+          <!-- Payment Receipt -->
+          <h3 style="margin:0 0 14px;font-size:16px;color:#00ccff;font-family:'Courier New',monospace;letter-spacing:1px;">// PAYMENT RECEIPT</h3>
+          <table width="100%" cellpadding="0" cellspacing="0" style="background:#050f05;border:1px solid #00ccff;border-radius:8px;overflow:hidden;margin-bottom:28px;">
+            <tr><td style="background:rgba(0,204,255,0.1);padding:12px 20px;border-bottom:1px solid #1a2a3a;">
+              <p style="margin:0;font-size:11px;color:#00ccff;letter-spacing:2px;font-family:'Courier New',monospace;">PAYMENT CONFIRMED ✓</p>
+            </td></tr>
+            <tr><td style="padding:20px;">
+              <table width="100%" cellpadding="0" cellspacing="0">
+                <tr>
+                  <td style="padding:8px 0;border-bottom:1px solid #1a2a1a;font-size:13px;color:#888;">Plan</td>
+                  <td style="padding:8px 0;border-bottom:1px solid #1a2a1a;text-align:right;"><span style="background:#00ccff;color:#000;font-size:11px;font-weight:800;padding:3px 10px;border-radius:10px;">⭐ PREMIUM</span></td>
+                </tr>
+                <tr>
+                  <td style="padding:8px 0;border-bottom:1px solid #1a2a1a;font-size:13px;color:#888;">Reference</td>
+                  <td style="padding:8px 0;border-bottom:1px solid #1a2a1a;text-align:right;font-size:13px;color:#fff;font-family:'Courier New',monospace;">${reference}</td>
+                </tr>
+                <tr>
+                  <td style="padding:8px 0;border-bottom:1px solid #1a2a1a;font-size:13px;color:#888;">Amount</td>
+                  <td style="padding:8px 0;border-bottom:1px solid #1a2a1a;text-align:right;font-size:13px;color:#fff;font-weight:700;">KSh 30</td>
+                </tr>
+                <tr>
+                  <td style="padding:8px 0;border-bottom:1px solid #1a2a1a;font-size:13px;color:#888;">Name</td>
+                  <td style="padding:8px 0;border-bottom:1px solid #1a2a1a;text-align:right;font-size:13px;color:#fff;">${subscriber.name}</td>
+                </tr>
+                <tr>
+                  <td style="padding:8px 0;font-size:13px;color:#888;">Valid Until</td>
+                  <td style="padding:8px 0;text-align:right;font-size:13px;color:#00ccff;font-weight:700;">${expiryFormatted}</td>
+                </tr>
+              </table>
+            </td></tr>
+          </table>
 
-          <!-- ═══ FOOTER ═══ -->
-          <tr>
-            <td style="background:#030803;border:1px solid #1a3a1a;border-top:2px solid #0d2010;border-radius:0 0 12px 12px;padding:32px 40px;text-align:center;">
+          <!-- CTA -->
+          <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:24px;">
+            <tr><td align="center">
+              <a href="${siteUrl}" style="display:inline-block;background:#00ccff;color:#000;font-size:15px;font-weight:800;text-decoration:none;padding:16px 40px;border-radius:8px;">🛡️ Visit CyberWatch Kenya →</a>
+            </td></tr>
+          </table>
 
-              <p style="margin:0 0 8px;font-size:20px;">🛡️</p>
-              <p style="margin:0 0 4px;font-size:14px;font-weight:700;color:#ffffff;">CyberWatch Kenya</p>
-              <p style="margin:0 0 20px;font-size:12px;color:#557755;font-family:'Courier New',monospace;">Protecting Kenyans Online Since 2024</p>
+          <!-- Security tip -->
+          <table width="100%" cellpadding="16" style="background:#050f05;border-left:4px solid #00ff41;border-radius:0 8px 8px 0;">
+            <tr><td>
+              <p style="margin:0 0 6px;font-size:11px;color:#00ff41;letter-spacing:2px;font-family:'Courier New',monospace;">💡 SECURITY TIP</p>
+              <p style="margin:0;font-size:14px;color:#ccddcc;line-height:1.7;"><strong style="color:#fff;">Never share your M-PESA PIN</strong> with anyone — not even someone claiming to be from Safaricom. Safaricom will never call asking for your PIN or OTP.</p>
+            </td></tr>
+          </table>
 
-              <p style="margin:0 0 16px;font-size:12px;color:#557755;">
-                You are receiving this because you subscribed at CyberWatch Kenya.<br>
-                We will send you a renewal reminder 5 days before your subscription expires.
-              </p>
+        </td>
+      </tr>
 
-              <p style="margin:0;font-size:11px;color:#334433;">
-                © 2024 CyberWatch Kenya. All rights reserved. &nbsp;|&nbsp; Built to protect Kenyans 🇰🇪
-              </p>
-            </td>
-          </tr>
+      <!-- FOOTER -->
+      <tr>
+        <td style="background:#030803;border:1px solid #1a3a1a;border-radius:0 0 12px 12px;padding:28px 40px;text-align:center;">
+          <p style="margin:0 0 4px;font-size:14px;font-weight:700;color:#fff;">🛡️ CyberWatch Kenya</p>
+          <p style="margin:0 0 16px;font-size:12px;color:#557755;font-family:'Courier New',monospace;">Protecting Kenyans Online Since 2024</p>
+          <p style="margin:0;font-size:11px;color:#334433;">We will remind you 5 days before your subscription expires.<br>© 2024 CyberWatch Kenya 🇰🇪</p>
+        </td>
+      </tr>
 
-        </table>
-      </td>
-    </tr>
-  </table>
-
-</body>
-</html>
-      `
+    </table>
+  </td></tr>
+</table>
+</body></html>`
     });
-    console.log(`📧 Welcome email sent to ${subscriber.email}`);
+    console.log(`📧 Premium welcome email sent to ${subscriber.email}`);
   } catch (err) {
-    console.error('Welcome email error:', err.message);
+    console.error('Welcome email error:', err.response?.data || err.message);
   }
 }
 
 async function sendRenewalReminder(subscriber, expiryDate) {
   try {
-    const transporter = await getTransporter();
     const renewUrl = `${process.env.SITE_URL}/subscribe.html?renew=true&email=${subscriber.email}`;
-
-    await transporter.sendMail({
-      from: process.env.EMAIL_FROM,
+    await sendBrevoEmail({
       to: subscriber.email,
+      toName: subscriber.name,
       subject: '⚠️ CyberWatch Kenya — Your subscription expires in 5 days',
-      html: `
-        <!DOCTYPE html><html>
-        <body style="background:#0a0a0a;font-family:'Courier New',monospace;padding:20px;">
-        <div style="max-width:600px;margin:0 auto;background:#0d1117;border:1px solid #1e2d1e;border-radius:8px;padding:32px;">
-          <h1 style="color:#00ff41;">🛡️ CyberWatch Kenya</h1>
-          <h2 style="color:#ffcc00;">⚠️ Your subscription expires on ${moment(expiryDate).format('Do MMMM YYYY')}</h2>
-          <p style="color:#ccc;">Hi ${subscriber.name}, renew now to keep receiving scam alerts.</p>
-          <div style="text-align:center;margin:32px 0;">
-            <a href="${renewUrl}" style="background:#00ff41;color:#000;padding:14px 32px;border-radius:6px;text-decoration:none;font-weight:bold;">
-              Renew for KSh 30 →
-            </a>
-          </div>
-          <p style="color:#555;font-size:11px;">© 2024 CyberWatch Kenya</p>
-        </div>
-        </body></html>
-      `
+      html: `<!DOCTYPE html><html>
+<body style="margin:0;padding:0;background-color:#050a05;font-family:Arial,Helvetica,sans-serif;">
+<table width="100%" cellpadding="0" cellspacing="0" style="background-color:#050a05;padding:40px 0;">
+  <tr><td align="center">
+    <table width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;">
+      <tr><td style="background:linear-gradient(135deg,#1a1000,#2a1a00);border-radius:12px 12px 0 0;padding:40px;text-align:center;border:1px solid #3a2a00;border-bottom:none;">
+        <div style="font-size:48px;margin-bottom:16px;">⚠️</div>
+        <h1 style="margin:0 0 4px;font-size:24px;color:#fff;">CyberWatch <span style="color:#00ff41;">Kenya</span></h1>
+        <p style="margin:0 0 16px;font-size:12px;color:#ffcc00;letter-spacing:2px;font-family:'Courier New',monospace;">SUBSCRIPTION EXPIRY NOTICE</p>
+        <h2 style="margin:0;font-size:20px;color:#ffcc00;">Expires on ${moment(expiryDate).format('Do MMMM YYYY')}</h2>
+      </td></tr>
+      <tr><td style="background:#ffcc00;padding:14px 40px;border-left:1px solid #3a2a00;border-right:1px solid #3a2a00;">
+        <p style="margin:0;font-size:13px;color:#000;font-weight:700;text-align:center;">⏰ 5 days left — Renew now to stay protected</p>
+      </td></tr>
+      <tr><td style="background:#0a0a05;padding:40px;border:1px solid #3a2a00;border-top:none;border-bottom:none;">
+        <p style="font-size:15px;color:#ccddcc;line-height:1.8;">Hi <strong style="color:#fff;">${subscriber.name}</strong>, your premium subscription expires in <strong style="color:#ffcc00;">5 days</strong>. Renew for just <strong style="color:#00ff41;">KSh 30</strong> to stay protected.</p>
+        <table width="100%" cellpadding="0" cellspacing="0" style="margin:28px 0;">
+          <tr><td align="center"><a href="${renewUrl}" style="display:inline-block;background:#00ff41;color:#000;font-size:15px;font-weight:800;text-decoration:none;padding:16px 40px;border-radius:8px;">🔄 Renew for KSh 30 →</a></td></tr>
+        </table>
+      </td></tr>
+      <tr><td style="background:#030803;border:1px solid #1a3a1a;border-radius:0 0 12px 12px;padding:24px 40px;text-align:center;">
+        <p style="margin:0 0 4px;font-size:14px;font-weight:700;color:#fff;">🛡️ CyberWatch Kenya</p>
+        <p style="margin:0;font-size:11px;color:#334433;">© 2024 CyberWatch Kenya 🇰🇪</p>
+      </td></tr>
+    </table>
+  </td></tr>
+</table>
+</body></html>`
     });
   } catch (err) {
-    console.error('Reminder email error:', err.message);
+    console.error('Reminder email error:', err.response?.data || err.message);
   }
 }
 
 async function sendExpiryEmail(subscriber) {
   try {
-    const transporter = await getTransporter();
     const renewUrl = `${process.env.SITE_URL}/subscribe.html?renew=true&email=${subscriber.email}`;
-
-    await transporter.sendMail({
-      from: process.env.EMAIL_FROM,
+    await sendBrevoEmail({
       to: subscriber.email,
+      toName: subscriber.name,
       subject: '❌ CyberWatch Kenya — Your subscription has expired',
-      html: `
-        <!DOCTYPE html><html>
-        <body style="background:#0a0a0a;font-family:'Courier New',monospace;padding:20px;">
-        <div style="max-width:600px;margin:0 auto;background:#0d1117;border:1px solid #1e2d1e;border-radius:8px;padding:32px;">
-          <h1 style="color:#00ff41;">🛡️ CyberWatch Kenya</h1>
-          <h2 style="color:#ff2244;">Your subscription has expired</h2>
-          <p style="color:#ccc;">Hi ${subscriber.name}, you will no longer receive scam alerts.</p>
-          <p style="color:#ccc;">Renew for just <strong style="color:#00ff41;">KSh 30/month</strong> to stay protected.</p>
-          <div style="text-align:center;margin:32px 0;">
-            <a href="${renewUrl}" style="background:#00ff41;color:#000;padding:14px 32px;border-radius:6px;text-decoration:none;font-weight:bold;">
-              Renew Now — KSh 30 →
-            </a>
-          </div>
-          <p style="color:#555;font-size:11px;">© 2024 CyberWatch Kenya</p>
-        </div>
-        </body></html>
-      `
+      html: `<!DOCTYPE html><html>
+<body style="margin:0;padding:0;background-color:#050a05;font-family:Arial,Helvetica,sans-serif;">
+<table width="100%" cellpadding="0" cellspacing="0" style="background-color:#050a05;padding:40px 0;">
+  <tr><td align="center">
+    <table width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;">
+      <tr><td style="background:linear-gradient(135deg,#1a0000,#2a0505);border-radius:12px 12px 0 0;padding:40px;text-align:center;border:1px solid #3a1010;border-bottom:none;">
+        <div style="font-size:48px;margin-bottom:16px;">🔴</div>
+        <h1 style="margin:0 0 4px;font-size:24px;color:#fff;">CyberWatch <span style="color:#00ff41;">Kenya</span></h1>
+        <p style="margin:0 0 16px;font-size:12px;color:#ff4444;letter-spacing:2px;font-family:'Courier New',monospace;">SUBSCRIPTION EXPIRED</p>
+        <h2 style="margin:0;font-size:20px;color:#ff4444;">Your subscription has ended</h2>
+      </td></tr>
+      <tr><td style="background:#ff2244;padding:14px 40px;border-left:1px solid #3a1010;border-right:1px solid #3a1010;">
+        <p style="margin:0;font-size:13px;color:#fff;font-weight:700;text-align:center;">❌ You are no longer receiving scam alerts</p>
+      </td></tr>
+      <tr><td style="background:#0a0505;padding:40px;border:1px solid #3a1010;border-top:none;border-bottom:none;">
+        <p style="font-size:15px;color:#ccddcc;line-height:1.8;">Hi <strong style="color:#fff;">${subscriber.name}</strong>, your subscription has expired. Renew for just <strong style="color:#00ff41;">KSh 30/month</strong> to get back your protection immediately.</p>
+        <table width="100%" cellpadding="0" cellspacing="0" style="margin:28px 0;">
+          <tr><td align="center"><a href="${renewUrl}" style="display:inline-block;background:#00ff41;color:#000;font-size:15px;font-weight:800;text-decoration:none;padding:16px 40px;border-radius:8px;">🛡️ Renew Now — KSh 30 →</a></td></tr>
+        </table>
+      </td></tr>
+      <tr><td style="background:#030803;border:1px solid #1a3a1a;border-radius:0 0 12px 12px;padding:24px 40px;text-align:center;">
+        <p style="margin:0 0 4px;font-size:14px;font-weight:700;color:#fff;">🛡️ CyberWatch Kenya</p>
+        <p style="margin:0;font-size:11px;color:#334433;">© 2024 CyberWatch Kenya 🇰🇪</p>
+      </td></tr>
+    </table>
+  </td></tr>
+</table>
+</body></html>`
     });
   } catch (err) {
-    console.error('Expiry email error:', err.message);
+    console.error('Expiry email error:', err.response?.data || err.message);
   }
 }
