@@ -345,41 +345,56 @@ async function submitScamReport() {
 async function loadStats() {
   try {
     const [postsRes, subsRes, reportsRes] = await Promise.all([
-      fetch(`${API}/newsletters?limit=1`),
+      fetch(`${API}/newsletters`),
       fetch(`${API}/subscribers/count`),
       fetch(`${API}/subscribers/reports/count`)
     ]);
 
-    const postsData    = await postsRes.json();
-    const subsData     = await subsRes.json().catch(() => ({ count: 0 }));
-    const reportsData  = await reportsRes.json().catch(() => ({ count: 0 }));
+    const postsData   = await postsRes.json();
+    const subsData    = await subsRes.json().catch(() => ({ count: 0 }));
+    const reportsData = await reportsRes.json().catch(() => ({ count: 0 }));
 
-    if (postsData.success)  animateCounter('statPosts',        postsData.total  || 0);
-    if (subsData.success)   animateCounter('statSubscribers',  subsData.count   || 0);
+    const totalPosts   = postsData.total   || 0;
+    const totalSubs    = subsData.count    || 0;
+    const totalReports = reportsData.count || 0;
 
-    // Also update the new social proof stats if they exist on the page
-    const proSubs    = document.getElementById('proStatSubs');
-    const proAlerts  = document.getElementById('proStatAlerts');
-    const proReports = document.getElementById('proStatReports');
+    // Hero stats (top of page)
+    animateCounter('statPosts',       totalPosts);
+    animateCounter('statSubscribers', totalSubs);
 
-    if (proSubs)    animateCounter('proStatSubs',    subsData.count    || 0, '+');
-    if (proAlerts)  animateCounter('proStatAlerts',  postsData.total   || 0, '+');
-    if (proReports) animateCounter('proStatReports', reportsData.count || 0, '+');
+    // Social proof stats (lower section)
+    animateCounter('proStatSubs',    totalSubs,    '+');
+    animateCounter('proStatAlerts',  totalPosts,   '+');
+    animateCounter('proStatReports', totalReports, '+');
 
-  } catch (e) { /* silent fail */ }
+  } catch (e) {
+    console.error('Stats error:', e);
+    // Fallback so numbers show something
+    ['statSubscribers','proStatSubs'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.textContent = '—';
+    });
+  }
 }
 
 function animateCounter(id, target, suffix = '') {
   const el = document.getElementById(id);
   if (!el) return;
-  if (target === 0) { el.textContent = '0' + suffix; return; }
+  const numTarget = parseInt(target) || 0;
+  if (numTarget === 0) { el.textContent = '0' + suffix; return; }
   let count = 0;
-  const step = Math.max(1, Math.ceil(target / 50));
-  const interval = setInterval(() => {
-    count = Math.min(count + step, target);
+  const duration = 1500;
+  const startTime = performance.now();
+  function step(now) {
+    const elapsed  = now - startTime;
+    const progress = Math.min(elapsed / duration, 1);
+    const eased    = 1 - Math.pow(1 - progress, 3); // ease out cubic
+    count = Math.floor(numTarget * eased);
     el.textContent = count.toLocaleString() + suffix;
-    if (count >= target) clearInterval(interval);
-  }, 30);
+    if (progress < 1) requestAnimationFrame(step);
+    else el.textContent = numTarget.toLocaleString() + suffix;
+  }
+  requestAnimationFrame(step);
 }
 
 // ─────────────────────────────────────────────
