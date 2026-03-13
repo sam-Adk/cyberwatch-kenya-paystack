@@ -11,7 +11,7 @@
  * 5. Manages tab navigation
  */
 
-const API = 'https://cyberwatch-kenya.onrender.com/api';
+const API = 'http://localhost:5000/api';
 
 // ─────────────────────────────────────────────
 // AUTH GUARD — redirect if not logged in
@@ -330,7 +330,13 @@ async function loadSubscribers() {
       <tr>
         <td style="font-weight:600;">${escapeHTML(s.name)}</td>
         <td class="font-mono" style="font-size:12px;">${escapeHTML(s.email)}</td>
-        <td><span class="status-badge ${s.active ? 'status-published' : 'status-draft'}">${s.active ? 'Active' : 'Unsubscribed'}</span></td>
+        <td>
+          ${s.plan === 'premium'
+            ? '<span style="background:#00ccff;color:#000;font-size:10px;font-weight:800;padding:3px 10px;border-radius:10px;letter-spacing:1px;">⭐ PREMIUM</span>'
+            : '<span style="background:rgba(0,255,65,0.15);color:#00ff41;font-size:10px;font-weight:700;padding:3px 10px;border-radius:10px;">📡 FREE</span>'
+          }
+        </td>
+        <td><span class="status-badge ${s.active ? 'status-published' : 'status-draft'}">${s.active ? 'Active' : 'Inactive'}</span></td>
         <td class="font-mono" style="font-size:11px; color:var(--muted);">${new Date(s.createdAt).toLocaleDateString('en-KE')}</td>
       </tr>
     `).join('');
