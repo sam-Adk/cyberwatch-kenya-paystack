@@ -31,7 +31,6 @@ let searchDebounceTimer = null;
 document.addEventListener('DOMContentLoaded', () => {
   loadPosts();
   loadStats();
-  debugStats();
 });
 
 // ─────────────────────────────────────────────
@@ -342,29 +341,6 @@ async function submitScamReport() {
 // ─────────────────────────────────────────────
 // LOAD STATS (for hero counters)
 // ─────────────────────────────────────────────
-
-async function debugStats() {
-  console.log('=== STATS DEBUG ===');
-  console.log('API URL:', API);
-  try {
-    const r1 = await fetch(`${API}/newsletters`);
-    const d1 = await r1.json();
-    console.log('newsletters response:', JSON.stringify(d1).substring(0, 200));
-    console.log('total posts:', d1.total);
-  } catch(e) { console.error('newsletters failed:', e); }
-
-  try {
-    const r2 = await fetch(`${API}/subscribers/count`);
-    const d2 = await r2.json();
-    console.log('subscribers/count response:', JSON.stringify(d2));
-  } catch(e) { console.error('subscribers/count failed:', e); }
-
-  try {
-    const r3 = await fetch(`${API}/subscribers/reports/count`);
-    const d3 = await r3.json();
-    console.log('reports/count response:', JSON.stringify(d3));
-  } catch(e) { console.error('reports/count failed:', e); }
-}
 
 async function loadStats() {
   try {
