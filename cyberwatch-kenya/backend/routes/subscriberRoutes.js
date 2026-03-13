@@ -9,6 +9,7 @@ const axios = require('axios');
 const Subscriber = require('../models/Subscriber');
 const ScamReport = require('../models/ScamReport');
 const { protect } = require('../middleware/authMiddleware');
+const Subscription = require('../models/Subscription');
 
 // ── PUBLIC: SUBSCRIBE ──────────────────────────
 router.post('/subscribe', [
@@ -26,13 +27,29 @@ router.post('/subscribe', [
       if (existing.active) {
         return res.status(400).json({ success: false, message: 'This email is already subscribed. Check your inbox for scam alerts!' });
       }
-      // Was unsubscribed - reactivate them
+      // Was unsubscribed — check if they had a valid premium subscription
       existing.active = true;
       existing.name = name;
-      existing.plan = 'free'; // reset to free on re-subscribe
+
+      if (existing.plan === 'premium') {
+        // Check if their paid subscription is still valid
+        const activeSub = await Subscription.findOne({
+          subscriber: existing._id,
+          status: 'active',
+          expiryDate: { $gt: new Date() }
+        });
+        if (!activeSub) {
+          // Premium expired — downgrade to free
+          existing.plan = 'free';
+        }
+      }
+
       await existing.save();
       sendFreeWelcomeEmail(existing).catch(e => console.error('Welcome email error:', e.message));
-      return res.json({ success: true, message: 'Welcome back! You have been re-subscribed.' });
+      const msg = existing.plan === 'premium'
+        ? 'Welcome back, Premium member! Your active subscription has been restored.'
+        : 'Welcome back! You have been re-subscribed for free.';
+      return res.json({ success: true, message: msg, plan: existing.plan });
     }
 
     // Brand new subscriber
