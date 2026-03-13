@@ -21,6 +21,7 @@ const newsletterRoutes = require('./routes/newsletterRoutes');
 const subscriberRoutes = require('./routes/subscriberRoutes');
 const mpesaRoutes = require('./routes/mpesaRoutes');
 const paystackRoutes = require('./routes/paystackRoutes');
+const uploadRoutes    = require('./routes/uploadRoutes');
 const { startCronJobs } = require('./utils/cronJobs');
 
 const app = express();
@@ -51,6 +52,7 @@ app.use('/api/newsletters', newsletterRoutes);
 app.use('/api/subscribers', subscriberRoutes);
 app.use('/api/mpesa', mpesaRoutes);
 app.use('/api/paystack', paystackRoutes);  // Paystack payments
+app.use('/api/upload',   uploadRoutes);     // Image uploads
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {
@@ -167,7 +169,7 @@ PROTECT YOURSELF:
 HOW THE SCAM WORKS:
 1. You register and complete tasks, earning fake "credits"
 2. When you try to withdraw, the site says you must "upgrade" your account first
-3. You pay KSh 500–5,000 for an upgrade
+3. You pay KSh 990–5,000 for an upgrade
 4. After paying, you're asked to pay MORE for a "higher level"
 5. Eventually the site disappears or blocks you
 
