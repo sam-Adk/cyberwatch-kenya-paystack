@@ -100,7 +100,7 @@ exports.createNewsletter = async (req, res) => {
       return res.status(400).json({ success: false, errors: errors.array() });
     }
 
-    const { title, description, category, author, published, tags } = req.body;
+    const { title, description, category, author, published, tags, audience } = req.body;
 
     const newsletter = await Newsletter.create({
       title,
@@ -173,10 +173,16 @@ exports.sendNewsletter = async (req, res) => {
       return res.status(400).json({ success: false, message: 'This newsletter was already sent' });
     }
 
-    // Get all active subscribers
-    const subscribers = await Subscriber.find({ active: true });
+    // Get subscribers filtered by post audience
+    const audience = newsletter.audience || 'all';
+    let subscriberQuery = { active: true };
+    if (audience === 'free')    subscriberQuery.plan = 'free';
+    if (audience === 'premium') subscriberQuery.plan = 'premium';
+
+    const subscribers = await Subscriber.find(subscriberQuery);
     if (subscribers.length === 0) {
-      return res.status(400).json({ success: false, message: 'No active subscribers found' });
+      const label = audience === 'all' ? 'active' : audience;
+      return res.status(400).json({ success: false, message: `No ${label} subscribers found` });
     }
 
     // Generate HTML email template
