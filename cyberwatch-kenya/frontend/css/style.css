@@ -928,10 +928,6 @@ textarea.form-control {
   font-family: var(--font-mono);
   line-height: 1;
   margin-bottom: 6px;
-  background: linear-gradient(135deg, #00ff41, #00cc33);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
 }
 
 .stat-label-pro {
