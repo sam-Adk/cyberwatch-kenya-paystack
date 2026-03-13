@@ -286,6 +286,19 @@ async function subscribeUser() {
 // SCAM REPORT FORM
 // ─────────────────────────────────────────────
 
+function showReportThanks(name, type, platform) {
+  document.getElementById('reportThanksName').textContent = `Your report has been logged, ${name}!`;
+  document.getElementById('thanksSummaryType').textContent = type || '—';
+  document.getElementById('thanksSummaryPlatform').textContent = platform || 'Not specified';
+  document.getElementById('reportThanksOverlay').classList.remove('hidden');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeReportThanks() {
+  document.getElementById('reportThanksOverlay').classList.add('hidden');
+  document.body.style.overflow = '';
+}
+
 async function submitScamReport() {
   const name = document.getElementById('reportName').value.trim();
   const email = document.getElementById('reportEmail').value.trim();
@@ -321,10 +334,13 @@ async function submitScamReport() {
     const data = await res.json();
 
     if (data.success) {
-      alertBox.innerHTML = `<div class="alert alert-success">✅ ${data.message}</div>`;
       // Clear form
       ['reportName','reportEmail','reportPlatform','reportAmount','reportDescription'].forEach(id => document.getElementById(id).value = '');
       document.getElementById('reportType').value = '';
+      alertBox.innerHTML = '';
+
+      // Show thank you modal
+      showReportThanks(name, type, platform);
     } else {
       const msg = data.errors ? data.errors[0].msg : data.message;
       alertBox.innerHTML = `<div class="alert alert-error">❌ ${msg}</div>`;
