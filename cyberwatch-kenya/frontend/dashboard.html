@@ -42,6 +42,10 @@
     .status-draft { background: rgba(107,114,128,0.15); color: var(--muted); border: 1px solid rgba(107,114,128,0.3); }
     .post-form-panel { max-width: 720px; }
     @media(max-width:768px){ .dashboard-layout{grid-template-columns:1fr;} .sidebar{display:none;} .main-content{padding:20px;} }
+  /* Audience selector cards */
+  label[id^="aud-"] { display:block; }
+  label[id^="aud-"]:has(input:checked) { border-color: var(--green) !important; background: rgba(0,255,65,0.05); }
+  #aud-premium:has(input:checked) { border-color: #00ccff !important; background: rgba(0,204,255,0.05); }
   </style>
 </head>
 <body>
@@ -119,6 +123,7 @@
               <tr>
                 <th>Title</th>
                 <th>Category</th>
+                <th>Audience</th>
                 <th>Status</th>
                 <th>Date</th>
                 <th>Actions</th>
@@ -172,6 +177,29 @@
         <div class="form-group">
           <label class="form-label">Author</label>
           <input type="text" class="form-control" id="postAuthor" value="CyberWatch Kenya Team">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Audience *</label>
+          <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px; margin-top:4px;">
+            <label style="border:2px solid var(--border); border-radius:8px; padding:12px; cursor:pointer; text-align:center; transition:all 0.2s;" id="aud-all">
+              <input type="radio" name="postAudience" value="all" checked style="display:none;">
+              <div style="font-size:22px; margin-bottom:4px;">📡</div>
+              <div style="font-size:12px; font-weight:700; color:#fff;">Everyone</div>
+              <div style="font-size:11px; color:var(--muted);">Free + Premium</div>
+            </label>
+            <label style="border:2px solid var(--border); border-radius:8px; padding:12px; cursor:pointer; text-align:center; transition:all 0.2s;" id="aud-free">
+              <input type="radio" name="postAudience" value="free" style="display:none;">
+              <div style="font-size:22px; margin-bottom:4px;">🆓</div>
+              <div style="font-size:12px; font-weight:700; color:#fff;">Free Only</div>
+              <div style="font-size:11px; color:var(--muted);">Free subscribers</div>
+            </label>
+            <label style="border:2px solid var(--border); border-radius:8px; padding:12px; cursor:pointer; text-align:center; transition:all 0.2s;" id="aud-premium">
+              <input type="radio" name="postAudience" value="premium" style="display:none;">
+              <div style="font-size:22px; margin-bottom:4px;">⭐</div>
+              <div style="font-size:12px; font-weight:700; color:#00ccff;">Premium Only</div>
+              <div style="font-size:11px; color:var(--muted);">Paid subscribers</div>
+            </label>
+          </div>
         </div>
         <div class="form-group" style="display:flex; align-items:center; gap:10px;">
           <input type="checkbox" id="postPublished" style="width:18px; height:18px; accent-color:var(--green);">
