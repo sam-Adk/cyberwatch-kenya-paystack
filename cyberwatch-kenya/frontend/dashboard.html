@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Dashboard — CyberWatch Kenya</title>
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    .dashboard-layout { display: grid; grid-template-columns: 240px 1fr; min-height: 100vh; }
+    .sidebar { background: var(--surface); border-right: 1px solid var(--border); padding: 24px 0; position: sticky; top: 0; height: 100vh; overflow-y: auto; }
+    .sidebar-brand { padding: 0 24px 24px; border-bottom: 1px solid var(--border); margin-bottom: 16px; }
+    .sidebar-brand h2 { font-family: var(--font-mono); color: var(--green); font-size: 16px; }
+    .sidebar-brand p { font-size: 11px; color: var(--muted); margin-top: 4px; }
+    .sidebar-nav { list-style: none; }
+    .sidebar-nav li a {
+      display: flex; align-items: center; gap: 10px;
+      padding: 12px 24px; color: var(--muted); font-size: 14px;
+      transition: all var(--transition); border-left: 3px solid transparent;
+    }
+    .sidebar-nav li a:hover,
+    .sidebar-nav li a.active { color: var(--green); background: rgba(0,255,65,0.05); border-left-color: var(--green); }
+    .sidebar-nav li a .nav-icon { font-size: 16px; width: 20px; text-align: center; }
+    .sidebar-footer { position: absolute; bottom: 0; left: 0; right: 0; padding: 16px 24px; border-top: 1px solid var(--border); }
+    .main-content { padding: 32px; overflow-y: auto; }
+    .dash-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px; }
+    .dash-title { font-family: var(--font-mono); font-size: 22px; color: #fff; }
+    .dash-title::before { content: '> '; color: var(--green); }
+    .stat-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 16px; margin-bottom: 32px; }
+    .stat-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; }
+    .stat-card-label { font-size: 11px; color: var(--muted); font-family: var(--font-mono); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 8px; }
+    .stat-card-value { font-size: 2.2rem; font-weight: 700; font-family: var(--font-mono); color: var(--green); }
+    .stat-card-sub { font-size: 12px; color: var(--muted); margin-top: 4px; }
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; }
+    .table-wrap { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; }
+    th { text-align: left; padding: 12px 16px; font-family: var(--font-mono); font-size: 11px; color: var(--green); letter-spacing: 1px; text-transform: uppercase; border-bottom: 1px solid var(--border); }
+    td { padding: 14px 16px; border-bottom: 1px solid rgba(30,45,30,0.5); font-size: 13px; color: var(--text); vertical-align: top; }
+    tr:hover td { background: rgba(0,255,65,0.02); }
+    .status-badge { padding: 2px 8px; border-radius: 10px; font-size: 11px; font-family: var(--font-mono); }
+    .status-published { background: rgba(0,255,65,0.15); color: var(--green); border: 1px solid rgba(0,255,65,0.3); }
+    .status-draft { background: rgba(107,114,128,0.15); color: var(--muted); border: 1px solid rgba(107,114,128,0.3); }
+    .post-form-panel { max-width: 720px; }
+    @media(max-width:768px){ .dashboard-layout{grid-template-columns:1fr;} .sidebar{display:none;} .main-content{padding:20px;} }
+  </style>
+</head>
+<body>
+
+<div class="dashboard-layout">
+
+  <!-- ── SIDEBAR ── -->
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <h2>🛡️ CyberWatch KE</h2>
+      <p id="adminName" class="font-mono">Loading...</p>
+    </div>
+    <ul class="sidebar-nav">
+      <li><a href="#" class="active" onclick="showTab('overview', this)">
+        <span class="nav-icon">📊</span> Overview
+      </a></li>
+      <li><a href="#" onclick="showTab('posts', this)">
+        <span class="nav-icon">📰</span> Scam Posts
+      </a></li>
+      <li><a href="#" onclick="showTab('newpost', this)">
+        <span class="nav-icon">✏️</span> New Post
+      </a></li>
+      <li><a href="#" onclick="showTab('subscribers', this)">
+        <span class="nav-icon">👥</span> Subscribers
+      </a></li>
+      <li><a href="#" onclick="showTab('reports', this)">
+        <span class="nav-icon">🚨</span> Scam Reports
+      </a></li>
+    </ul>
+    <div class="sidebar-footer">
+      <a href="index.html" style="font-size:12px; color:var(--muted);">← View Site</a>
+      &nbsp;&nbsp;
+      <a href="#" onclick="logout()" style="font-size:12px; color:var(--red);">Logout</a>
+    </div>
+  </aside>
+
+  <!-- ── MAIN CONTENT ── -->
+  <main class="main-content">
+
+    <!-- OVERVIEW TAB -->
+    <div class="tab-panel active" id="tab-overview">
+      <div class="dash-header">
+        <h1 class="dash-title">Dashboard</h1>
+        <span class="font-mono" style="font-size:12px; color:var(--muted);" id="dashDate"></span>
+      </div>
+
+      <div class="stat-cards" id="statCards">
+        <div class="stat-card"><div class="stat-card-label">Total Posts</div><div class="stat-card-value" id="totalPosts">—</div></div>
+        <div class="stat-card"><div class="stat-card-label">Published</div><div class="stat-card-value" id="publishedPosts">—</div></div>
+        <div class="stat-card"><div class="stat-card-label">Subscribers</div><div class="stat-card-value" id="totalSubs">—</div></div>
+        <div class="stat-card"><div class="stat-card-label">Reports</div><div class="stat-card-value" id="totalReports">—</div></div>
+      </div>
+
+      <div class="card">
+        <h3 style="color:#fff; margin-bottom:16px; font-family:var(--font-mono);">> Quick Actions</h3>
+        <div style="display:flex; gap:12px; flex-wrap:wrap;">
+          <button class="btn btn-primary" onclick="showTab('newpost', null)">✏️ Write New Post</button>
+          <button class="btn btn-outline" onclick="showTab('subscribers', null)">👥 View Subscribers</button>
+          <button class="btn btn-outline" onclick="showTab('reports', null)">🚨 Review Reports</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- POSTS TAB -->
+    <div class="tab-panel" id="tab-posts">
+      <div class="dash-header">
+        <h1 class="dash-title">Scam Posts</h1>
+        <button class="btn btn-primary btn-sm" onclick="showTab('newpost', null)">+ New Post</button>
+      </div>
+      <div id="postsTableAlert"></div>
+      <div class="card">
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Title</th>
+                <th>Category</th>
+                <th>Status</th>
+                <th>Date</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="postsTableBody">
+              <tr><td colspan="5" style="text-align:center; padding:40px; color:var(--muted);">Loading...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- NEW POST TAB -->
+    <div class="tab-panel" id="tab-newpost">
+      <div class="dash-header">
+        <h1 class="dash-title" id="postFormTitle">New Post</h1>
+      </div>
+      <div class="post-form-panel">
+        <div id="postFormAlert"></div>
+        <input type="hidden" id="editingPostId">
+        <div class="form-group">
+          <label class="form-label">Title *</label>
+          <input type="text" class="form-control" id="postTitle" placeholder="e.g. Fake LinkedIn Recruiter Scams Targeting Kenyans">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Category *</label>
+          <select class="form-control" id="postCategory">
+            <option value="">-- Select Category --</option>
+            <option>Phishing</option>
+            <option>Crypto Scam</option>
+            <option>Employment Scam</option>
+            <option>Mobile Money Scam</option>
+            <option>Romance Scam</option>
+            <option>E-commerce Fraud</option>
+            <option>Online Fraud</option>
+            <option>Investment Scam</option>
+            <option>Impersonation</option>
+            <option>Other</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Content *</label>
+          <textarea class="form-control" id="postContent" rows="12"
+            placeholder="Describe the scam in detail. Include red flags, how it works, and how people can protect themselves."></textarea>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Tags (comma-separated)</label>
+          <input type="text" class="form-control" id="postTags" placeholder="Phishing, LinkedIn, Job Scam">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Author</label>
+          <input type="text" class="form-control" id="postAuthor" value="CyberWatch Kenya Team">
+        </div>
+        <div class="form-group" style="display:flex; align-items:center; gap:10px;">
+          <input type="checkbox" id="postPublished" style="width:18px; height:18px; accent-color:var(--green);">
+          <label for="postPublished" style="font-family:var(--font-mono); font-size:13px; color:var(--green); cursor:pointer;">
+            Publish immediately (uncheck to save as draft)
+          </label>
+        </div>
+        <div style="display:flex; gap:12px; flex-wrap:wrap;">
+          <button class="btn btn-primary" id="savePostBtn" onclick="savePost()">💾 Save Post</button>
+          <button class="btn btn-outline" onclick="clearPostForm()">Clear Form</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- SUBSCRIBERS TAB -->
+    <div class="tab-panel" id="tab-subscribers">
+      <div class="dash-header">
+        <h1 class="dash-title">Subscribers</h1>
+        <span class="font-mono" style="font-size:12px; color:var(--muted);" id="subCount"></span>
+      </div>
+      <div class="card">
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>Name</th><th>Email</th><th>Status</th><th>Joined</th></tr>
+            </thead>
+            <tbody id="subsTableBody">
+              <tr><td colspan="4" style="text-align:center; padding:40px; color:var(--muted);">Loading...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- REPORTS TAB -->
+    <div class="tab-panel" id="tab-reports">
+      <div class="dash-header">
+        <h1 class="dash-title">Scam Reports</h1>
+      </div>
+      <div class="card">
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>Reporter</th><th>Type</th><th>Platform</th><th>Amount Lost</th><th>Status</th><th>Date</th></tr>
+            </thead>
+            <tbody id="reportsTableBody">
+              <tr><td colspan="6" style="text-align:center; padding:40px; color:var(--muted);">Loading...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<script src="js/dashboard.js"></script>
+</body>
+</html>

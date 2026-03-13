@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CyberWatch Kenya — Stay Ahead of Online Scams</title>
+  <meta name="description" content="CyberWatch Kenya exposes online scams targeting Kenyans. Get the latest scam alerts, cybersecurity tips, and protect yourself online.">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🛡️</text></svg>">
+</head>
+<body>
+
+  <!-- ═══════════════════ NAVBAR ═══════════════════ -->
+  <nav class="navbar">
+    <div class="container">
+      <a href="index.html" class="navbar-brand">
+        <span class="shield-icon">🛡️</span>
+        CyberWatch<span class="text-cyan">Kenya</span>
+      </a>
+      <ul class="navbar-links" id="navLinks">
+        <li><a href="index.html" class="active">Home</a></li>
+        <li><a href="#alerts">Scam Alerts</a></li>
+        <li><a href="#tips">Safety Tips</a></li>
+        <li><a href="#report">Report Scam</a></li>
+        <li><a href="#subscribe" class="btn btn-outline btn-sm">Subscribe</a></li>
+      </ul>
+      <div class="hamburger" id="hamburger" onclick="toggleNav()">
+        <span></span><span></span><span></span>
+      </div>
+    </div>
+  </nav>
+
+  <!-- ═══════════════════ HERO ═══════════════════ -->
+  <section class="hero">
+    <div class="container">
+      <div class="hero-badge">
+        <span class="dot"></span>
+        LIVE — PROTECTING KENYANS ONLINE
+      </div>
+
+      <h1 class="hero-title">
+        <span class="highlight">CyberWatch</span> Kenya
+      </h1>
+      <p class="hero-subtitle">Stay Ahead of Online Scams</p>
+      <p class="hero-description">
+        We expose online scams, phishing attacks, and cyber fraud targeting people in Kenya and across Africa.
+        Get real-time alerts and learn how to protect yourself, your family, and your business.
+      </p>
+
+      <div class="hero-actions">
+        <a href="#alerts" class="btn btn-primary btn-lg">📡 View Latest Alerts</a>
+        <a href="#subscribe" class="btn btn-outline btn-lg">✉️ Subscribe for Free</a>
+      </div>
+
+      <div class="hero-stats">
+        <div class="stat-item">
+          <span class="stat-number" id="statPosts">—</span>
+          <span class="stat-label">Scam Alerts</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-number" id="statSubscribers">—</span>
+          <span class="stat-label">Subscribers</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-number">24/7</span>
+          <span class="stat-label">Monitoring</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-number">Free</span>
+          <span class="stat-label">Always</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════ SCAM ALERTS ═══════════════════ -->
+  <section id="alerts" style="padding: 60px 0;">
+    <div class="container">
+
+      <!-- Filter Bar -->
+      <div class="filter-bar">
+        <div class="search-input-wrap">
+          <span class="search-icon">🔍</span>
+          <input
+            type="text"
+            id="searchInput"
+            placeholder="Search scam alerts..."
+            oninput="debounceSearch()"
+          >
+        </div>
+        <div class="filter-chips" id="filterChips">
+          <button class="filter-chip active" onclick="setCategory('All', this)">All</button>
+          <button class="filter-chip" onclick="setCategory('Phishing', this)">Phishing</button>
+          <button class="filter-chip" onclick="setCategory('Crypto Scam', this)">Crypto</button>
+          <button class="filter-chip" onclick="setCategory('Employment Scam', this)">Jobs</button>
+          <button class="filter-chip" onclick="setCategory('Mobile Money Scam', this)">M-PESA</button>
+          <button class="filter-chip" onclick="setCategory('E-commerce Fraud', this)">Shopping</button>
+          <button class="filter-chip" onclick="setCategory('Online Fraud', this)">Online</button>
+        </div>
+      </div>
+
+      <div class="section-header">
+        <h2 class="section-title">Latest Scam Alerts</h2>
+        <span id="resultCount" class="text-muted font-mono" style="font-size:13px;"></span>
+      </div>
+
+      <!-- Posts Grid -->
+      <div id="alertsGrid" class="card-grid">
+        <div class="loading-overlay">
+          <div class="spinner"></div>
+          <span>Loading alerts...</span>
+        </div>
+      </div>
+
+      <!-- Pagination -->
+      <div id="pagination" class="pagination"></div>
+
+    </div>
+  </section>
+
+  <!-- ═══════════════════ CYBERSECURITY TIPS ═══════════════════ -->
+  <section id="tips" style="padding: 60px 0; background: rgba(0,255,65,0.02);">
+    <div class="container">
+      <div class="section-header">
+        <h2 class="section-title">Cybersecurity Tips</h2>
+        <span class="text-muted font-mono" style="font-size:13px;">PROTECT YOURSELF</span>
+      </div>
+
+      <div class="tips-grid">
+        <div class="tip-card">
+          <div class="tip-icon">🔐</div>
+          <div class="tip-title">Use Strong, Unique Passwords</div>
+          <div class="tip-text">Use at least 12 characters combining letters, numbers, and symbols. Never reuse passwords across sites. Use a password manager like Bitwarden (free).</div>
+        </div>
+        <div class="tip-card">
+          <div class="tip-icon">📱</div>
+          <div class="tip-title">Enable 2-Factor Authentication</div>
+          <div class="tip-text">Turn on 2FA on all your accounts — M-PESA, email, social media. Even if someone steals your password, they can't log in without your phone.</div>
+        </div>
+        <div class="tip-card">
+          <div class="tip-icon">🔗</div>
+          <div class="tip-title">Verify Links Before Clicking</div>
+          <div class="tip-text">Hover over links before clicking. Watch for typos like "safaricom.co.ke" vs "safaricorn.co.ke". Scammers create fake sites that look identical to real ones.</div>
+        </div>
+        <div class="tip-card">
+          <div class="tip-icon">💰</div>
+          <div class="tip-title">Never Pay to Get a Job</div>
+          <div class="tip-text">Legitimate employers never ask you to pay registration fees, training fees, or processing fees. If a job requires payment upfront — it is a scam.</div>
+        </div>
+        <div class="tip-card">
+          <div class="tip-icon">🌐</div>
+          <div class="tip-title">Use a VPN on Public Wi-Fi</div>
+          <div class="tip-text">Avoid accessing your bank or M-PESA on public Wi-Fi at cafes or airports. Hackers can intercept your data. Use a VPN like ProtonVPN (free tier available).</div>
+        </div>
+        <div class="tip-card">
+          <div class="tip-icon">📧</div>
+          <div class="tip-title">Recognise Phishing Emails</div>
+          <div class="tip-text">Banks and M-PESA will NEVER ask for your PIN or password via email or phone. Urgent, threatening language like "your account will be closed" is a red flag.</div>
+        </div>
+        <div class="tip-card">
+          <div class="tip-icon">🔑</div>
+          <div class="tip-title">Protect Your Crypto Seed Phrase</div>
+          <div class="tip-text">Your crypto seed phrase (12-24 words) is like a master key. Never type it online, share it with anyone, or store it in a photo on your phone.</div>
+        </div>
+        <div class="tip-card">
+          <div class="tip-icon">📞</div>
+          <div class="tip-title">Verify Caller Identity</div>
+          <div class="tip-text">If someone calls claiming to be from your bank, Safaricom, or DCI — hang up and call the official number back yourself. Scammers can spoof any caller ID.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════ REPORT A SCAM ═══════════════════ -->
+  <section id="report" style="padding: 60px 0;">
+    <div class="container">
+      <div class="section-header">
+        <h2 class="section-title">Report a Scam</h2>
+        <span class="text-muted font-mono" style="font-size:13px;">HELP OTHERS STAY SAFE</span>
+      </div>
+
+      <div style="max-width: 640px;">
+        <p style="margin-bottom: 24px; color: var(--muted);">
+          Encountered a scam? Report it anonymously. Our team reviews all reports and publishes warnings to protect others.
+        </p>
+
+        <div id="reportAlert"></div>
+
+        <div class="card">
+          <div class="form-group">
+            <label class="form-label">Your Name *</label>
+            <input type="text" class="form-control" id="reportName" placeholder="John Kamau">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Your Email (optional)</label>
+            <input type="email" class="form-control" id="reportEmail" placeholder="your@email.com">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Type of Scam *</label>
+            <select class="form-control" id="reportType">
+              <option value="">-- Select Scam Type --</option>
+              <option>Phishing</option>
+              <option>Crypto Scam</option>
+              <option>Employment Scam</option>
+              <option>Mobile Money Scam</option>
+              <option>Romance Scam</option>
+              <option>E-commerce Fraud</option>
+              <option>Online Fraud</option>
+              <option>Investment Scam</option>
+              <option>Impersonation</option>
+              <option>Other</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Platform (e.g. WhatsApp, Facebook, Email)</label>
+            <input type="text" class="form-control" id="reportPlatform" placeholder="WhatsApp">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Amount Lost (KSh — enter 0 if none)</label>
+            <input type="number" class="form-control" id="reportAmount" placeholder="0" min="0">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Describe the Scam * (minimum 30 characters)</label>
+            <textarea class="form-control" id="reportDescription" rows="5"
+              placeholder="Describe what happened in detail. How did they contact you? What did they ask for? What happened?"></textarea>
+          </div>
+          <button class="btn btn-primary w-full" id="reportBtn" onclick="submitScamReport()">
+            🚨 Submit Report
+          </button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════ SUBSCRIBE ═══════════════════ -->
+  <section id="subscribe" style="padding: 20px 0 80px;">
+    <div class="container">
+      <div class="subscribe-section">
+        <div style="font-size: 48px; margin-bottom: 16px;">📡</div>
+        <h2 style="color: #fff; margin-bottom: 12px;">Get Scam Alerts in Your Inbox</h2>
+        <p style="color: var(--muted); margin-bottom: 8px; max-width: 480px; margin-left: auto; margin-right: auto;">
+          Join Kenyans who receive our free scam alerts. Be the first to know when a new scam is targeting your community.
+        </p>
+        <p class="font-mono" style="font-size: 12px; color: var(--green); margin-bottom: 24px;">
+          ✅ FREE ✅ NO SPAM ✅ UNSUBSCRIBE ANYTIME
+        </p>
+
+        <div id="subscribeAlert"></div>
+
+        <div class="subscribe-form">
+          <div class="form-group">
+            <input type="text" class="form-control" id="subName" placeholder="Your full name">
+          </div>
+          <div class="subscribe-form-row">
+            <input type="email" class="form-control" id="subEmail" placeholder="your@email.com" style="flex:1;">
+            <button class="btn btn-primary" id="subscribeBtn" onclick="goToPayment()">
+              Subscribe →
+            </button>
+          </div>
+          <p style="font-size:12px; color:var(--muted); margin-top:10px; font-family:var(--font-mono);">
+            💳 KSh 30/month — Pay securely via M-PESA or Card
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════ MODAL (full post view) ═══════════════════ -->
+  <div class="modal-overlay hidden" id="modalOverlay" onclick="closeModalOnOverlay(event)">
+    <div class="modal" id="postModal">
+      <button class="modal-close" onclick="closeModal()">✕</button>
+      <div id="modalContent"></div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════ FOOTER ═══════════════════ -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div>
+          <div class="footer-brand">🛡️ CyberWatch Kenya</div>
+          <p class="footer-desc">Protecting Kenyans from online scams, phishing attacks, and cyber fraud. Our mission is a safer digital Kenya.</p>
+        </div>
+        <div>
+          <div class="footer-heading">Quick Links</div>
+          <ul class="footer-links">
+            <li><a href="#alerts">Scam Alerts</a></li>
+            <li><a href="#tips">Safety Tips</a></li>
+            <li><a href="#report">Report a Scam</a></li>
+            <li><a href="#subscribe">Newsletter</a></li>
+            <li><a href="login.html">Admin Login</a></li>
+          </ul>
+        </div>
+        <div>
+          <div class="footer-heading">Report Scams To</div>
+          <ul class="footer-links">
+            <li><a href="https://www.dci.go.ke" target="_blank">DCI Kenya</a></li>
+            <li><a href="tel:0800722020">CA Kenya: 0800 722 020</a></li>
+            <li><a href="tel:0722000100">Safaricom: 0722 000 100</a></li>
+            <li><a href="mailto:cybercrime@dci.go.ke">cybercrime@dci.go.ke</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <span class="footer-bottom-text">© 2024 CyberWatch Kenya. All rights reserved.</span>
+        <span class="footer-bottom-text">Built to protect Kenyans 🇰🇪</span>
+      </div>
+    </div>
+  </footer>
+
+  <script src="js/main.js"></script>
+  <script>
+    function goToPayment() {
+      const name  = document.getElementById('subName').value.trim();
+      const email = document.getElementById('subEmail').value.trim();
+      const alertBox = document.getElementById('subscribeAlert');
+
+      alertBox.innerHTML = '';
+
+      if (!name) {
+        alertBox.innerHTML = '<div class="alert alert-error">⚠️ Please enter your name first.</div>';
+        return;
+      }
+      if (!email || !/^\S+@\S+\.\S+$/.test(email)) {
+        alertBox.innerHTML = '<div class="alert alert-error">⚠️ Please enter a valid email address.</div>';
+        return;
+      }
+
+      // Redirect to subscribe.html with name and email pre-filled
+      window.location.href = 'subscribe.html?name=' + encodeURIComponent(name) + '&email=' + encodeURIComponent(email);
+    }
+  </script>
+</body>
+</html>

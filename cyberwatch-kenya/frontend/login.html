@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Login — CyberWatch Kenya</title>
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    body { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; padding: 20px; }
+    .login-box { width: 100%; max-width: 420px; }
+    .login-header { text-align: center; margin-bottom: 40px; }
+    .login-logo { font-size: 48px; margin-bottom: 16px; }
+    .login-title { font-family: var(--font-mono); color: var(--green); font-size: 24px; margin-bottom: 8px; }
+    .login-sub { color: var(--muted); font-size: 14px; }
+    .login-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 32px; }
+    .login-card:focus-within { border-color: rgba(0,255,65,0.3); box-shadow: 0 0 30px rgba(0,255,65,0.06); }
+  </style>
+</head>
+<body>
+  <div class="login-box">
+    <div class="login-header">
+      <div class="login-logo">🛡️</div>
+      <div class="login-title">CYBERWATCH KENYA</div>
+      <div class="login-sub font-mono">// ADMIN ACCESS ONLY //</div>
+    </div>
+
+    <div class="login-card">
+      <div id="loginAlert"></div>
+
+      <div class="form-group">
+        <label class="form-label">Email Address</label>
+        <input type="email" class="form-control" id="loginEmail"
+          placeholder="admin@cyberwatchkenya.com"
+          onkeypress="if(event.key==='Enter') doLogin()">
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Password</label>
+        <input type="password" class="form-control" id="loginPassword"
+          placeholder="••••••••••••"
+          onkeypress="if(event.key==='Enter') doLogin()">
+      </div>
+
+      <button class="btn btn-primary w-full" id="loginBtn" onclick="doLogin()" style="margin-top: 8px;">
+        🔐 Login to Dashboard
+      </button>
+
+      <p style="text-align:center; margin-top: 20px; font-size: 12px; color: var(--muted);">
+        <a href="index.html" style="color: var(--muted);">← Back to Homepage</a>
+      </p>
+    </div>
+
+    <p style="text-align:center; margin-top:24px; font-size:11px; color:var(--muted); font-family:var(--font-mono);">
+      Default: admin@cyberwatchkenya.com / Admin@123456
+    </p>
+  </div>
+
+  <script>
+    const API = 'http://localhost:5000/api';
+
+    // Redirect if already logged in
+    if (localStorage.getItem('cwk_token')) {
+      window.location.href = 'dashboard.html';
+    }
+
+    async function doLogin() {
+      const email = document.getElementById('loginEmail').value.trim();
+      const password = document.getElementById('loginPassword').value;
+      const btn = document.getElementById('loginBtn');
+      const alertBox = document.getElementById('loginAlert');
+
+      alertBox.innerHTML = '';
+
+      if (!email || !password) {
+        alertBox.innerHTML = '<div class="alert alert-error">⚠️ Please enter email and password.</div>';
+        return;
+      }
+
+      btn.disabled = true;
+      btn.innerHTML = '<span class="spinner"></span> Authenticating...';
+
+      try {
+        const res = await fetch(`${API}/auth/login`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password })
+        });
+
+        const data = await res.json();
+
+        if (data.success) {
+          localStorage.setItem('cwk_token', data.token);
+          localStorage.setItem('cwk_user', JSON.stringify(data.user));
+          alertBox.innerHTML = '<div class="alert alert-success">✅ Login successful! Redirecting...</div>';
+          setTimeout(() => window.location.href = 'dashboard.html', 800);
+        } else {
+          alertBox.innerHTML = `<div class="alert alert-error">❌ ${data.message || 'Invalid credentials'}</div>`;
+          btn.disabled = false;
+          btn.innerHTML = '🔐 Login to Dashboard';
+        }
+
+      } catch (err) {
+        alertBox.innerHTML = '<div class="alert alert-error">❌ Cannot connect to server. Make sure the backend is running.</div>';
+        btn.disabled = false;
+        btn.innerHTML = '🔐 Login to Dashboard';
+      }
+    }
+  </script>
+</body>
+</html>

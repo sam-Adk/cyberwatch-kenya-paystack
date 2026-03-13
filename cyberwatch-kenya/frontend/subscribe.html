@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Subscribe — CyberWatch Kenya</title>
+  <link rel="stylesheet" href="css/style.css">
+  <script src="https://js.paystack.co/v1/inline.js"></script>
+  <style>
+    .subscribe-page { min-height:100vh; display:flex; flex-direction:column; }
+    .subscribe-main { flex:1; padding:60px 0; }
+    .subscribe-box  { max-width:520px; margin:0 auto; }
+    .price-tag { display:inline-flex; align-items:center; gap:10px; background:rgba(0,255,65,0.1); border:1px solid rgba(0,255,65,0.3); border-radius:24px; padding:10px 24px; font-family:var(--font-mono); font-size:16px; color:var(--green); margin-bottom:24px; }
+    .steps { display:flex; gap:6px; margin-bottom:28px; }
+    .step { flex:1; text-align:center; padding:10px 4px; border-radius:var(--radius); font-size:11px; font-family:var(--font-mono); color:var(--muted); border:1px solid var(--border); transition:all 0.3s; }
+    .step.active { border-color:var(--green); color:var(--green); background:rgba(0,255,65,0.05); }
+    .step.done   { border-color:var(--green); color:var(--green); background:rgba(0,255,65,0.12); }
+    .step-icon   { display:block; font-size:20px; margin-bottom:4px; }
+    .processing-box { text-align:center; padding:48px 24px; border:1px solid var(--border); border-radius:var(--radius); background:var(--surface); }
+    .success-box { text-align:center; padding:40px 24px; border:1px solid rgba(0,255,65,0.4); border-radius:var(--radius); background:rgba(0,255,65,0.04); }
+    .receipt { background:var(--surface2); border:1px solid var(--border); border-radius:var(--radius); padding:20px; margin:20px 0; font-family:var(--font-mono); text-align:left; }
+    .receipt-row { display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid var(--border); font-size:13px; }
+    .receipt-row:last-child { border:none; }
+    .receipt-label { color:var(--muted); }
+    .receipt-value { color:#fff; font-weight:700; }
+    .perks { display:flex; flex-direction:column; gap:10px; margin-top:28px; }
+    .perk  { display:flex; gap:12px; align-items:flex-start; font-size:14px; color:var(--muted); }
+    .perk-icon { color:var(--green); flex-shrink:0; }
+    .error-box { text-align:center; padding:40px 24px; border:1px solid rgba(255,34,68,0.3); border-radius:var(--radius); background:rgba(255,34,68,0.04); }
+  </style>
+</head>
+<body class="subscribe-page">
+
+  <nav class="navbar">
+    <div class="container">
+      <a href="index.html" class="navbar-brand">
+        <span class="shield-icon">🛡️</span>
+        CyberWatch<span class="text-cyan">Kenya</span>
+      </a>
+      <ul class="navbar-links">
+        <li><a href="index.html">Home</a></li>
+        <li><a href="index.html#alerts">Scam Alerts</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <main class="subscribe-main">
+    <div class="container">
+      <div class="subscribe-box">
+
+        <div style="text-align:center; margin-bottom:32px;">
+          <div style="font-size:56px; margin-bottom:16px;">🛡️</div>
+          <h1 style="color:#fff; font-size:2rem; margin-bottom:12px;">Subscribe to CyberWatch Kenya</h1>
+          <div class="price-tag">💰 Only KSh 30 per month</div>
+          <p style="color:var(--muted); font-size:14px; max-width:380px; margin:0 auto;">Real-time scam alerts delivered to your inbox. Cancel anytime.</p>
+        </div>
+
+        <!-- STEPS -->
+        <div class="steps">
+          <div class="step active" id="step1"><span class="step-icon">📝</span>Your Details</div>
+          <div class="step" id="step2"><span class="step-icon">💳</span>Pay KSh 30</div>
+          <div class="step" id="step3"><span class="step-icon">✅</span>Done!</div>
+        </div>
+
+        <!-- FORM -->
+        <div id="formPanel" class="card">
+          <div id="formAlert"></div>
+          <div class="form-group">
+            <label class="form-label">Full Name *</label>
+            <input type="text" class="form-control" id="subName" placeholder="e.g. John Kamau">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Email Address *</label>
+            <input type="email" class="form-control" id="subEmail" placeholder="e.g. john@gmail.com">
+            <div class="form-hint">Scam alerts will be sent to this email</div>
+          </div>
+          <button class="btn btn-primary w-full btn-lg" id="payBtn" onclick="startPayment()" style="margin-top:8px;">
+            💳 Subscribe &amp; Pay KSh 30
+          </button>
+          <div style="display:flex;align-items:center;justify-content:center;gap:8px;margin-top:16px;font-size:12px;color:var(--muted);">
+            🔒 Secured by Paystack — Pay with M-PESA, Card or Bank Transfer
+          </div>
+        </div>
+
+        <!-- PROCESSING -->
+        <div id="processingPanel" class="hidden">
+          <div class="processing-box">
+            <div style="font-size:64px;">⚙️</div>
+            <h3 style="color:#fff; margin:20px 0 8px;">Confirming payment...</h3>
+            <p style="color:var(--muted);">Please wait a moment.</p>
+            <div class="spinner" style="margin:16px auto;"></div>
+          </div>
+        </div>
+
+        <!-- SUCCESS -->
+        <div id="successPanel" class="hidden">
+          <div class="success-box">
+            <div style="font-size:72px; margin-bottom:16px;">🎉</div>
+            <h2 style="color:var(--green); margin-bottom:8px;">You're now protected!</h2>
+            <p style="color:var(--muted); margin-bottom:4px;">Welcome to CyberWatch Kenya. Your subscription is active.</p>
+            <p style="color:var(--muted); font-size:13px; margin-bottom:24px;">A confirmation email has been sent to your inbox.</p>
+            <div class="receipt">
+              <div style="color:var(--green);font-size:11px;letter-spacing:2px;margin-bottom:12px;">PAYMENT RECEIPT</div>
+              <div class="receipt-row"><span class="receipt-label">Reference</span><span class="receipt-value" id="receiptRef">—</span></div>
+              <div class="receipt-row"><span class="receipt-label">Amount</span><span class="receipt-value">KSh 30</span></div>
+              <div class="receipt-row"><span class="receipt-label">Email</span><span class="receipt-value" id="receiptEmail">—</span></div>
+              <div class="receipt-row"><span class="receipt-label">Valid Until</span><span class="receipt-value" id="receiptExpiry">30 days from today</span></div>
+            </div>
+            <a href="index.html" class="btn btn-primary btn-lg">🛡️ Go to Homepage</a>
+          </div>
+        </div>
+
+        <!-- ERROR -->
+        <div id="errorPanel" class="hidden">
+          <div class="error-box">
+            <div style="font-size:48px; margin-bottom:16px;">❌</div>
+            <h3 style="color:var(--red); margin-bottom:8px;">Payment Failed</h3>
+            <p style="color:var(--muted); margin-bottom:24px;" id="errorMsg">Something went wrong. Please try again.</p>
+            <button class="btn btn-outline" onclick="resetForm()">← Try Again</button>
+          </div>
+        </div>
+
+        <!-- PERKS -->
+        <div class="perks" id="perksSection">
+          <div style="font-family:var(--font-mono);font-size:11px;color:var(--green);letter-spacing:2px;margin-top:16px;margin-bottom:4px;">WHAT YOU GET FOR KSh 30/MONTH</div>
+          <div class="perk"><span class="perk-icon">✅</span><span>Real-time scam alerts sent to your email immediately</span></div>
+          <div class="perk"><span class="perk-icon">✅</span><span>M-PESA fraud, job scams, crypto scams, phishing warnings</span></div>
+          <div class="perk"><span class="perk-icon">✅</span><span>Weekly cybersecurity tips to stay safe online</span></div>
+          <div class="perk"><span class="perk-icon">✅</span><span>Renewal reminder 5 days before expiry</span></div>
+          <div class="perk"><span class="perk-icon">✅</span><span>Cancel anytime — no hidden charges</span></div>
+          <div class="perk"><span class="perk-icon">✅</span><span>Pay with M-PESA, Visa, Mastercard, or bank transfer</span></div>
+        </div>
+
+      </div>
+    </div>
+  </main>
+
+  <script>
+    const API         = 'http://localhost:5000/api';
+    const PAYSTACK_PK = 'pk_test_e673f898e0d3a6f5999c3c99b9e3e3b391dd4ee9';
+
+    // Pre-fill email if coming from renewal link
+    window.addEventListener('DOMContentLoaded', () => {
+      const p = new URLSearchParams(window.location.search);
+      if (p.get('renew') && p.get('email')) {
+        document.getElementById('subEmail').value = p.get('email');
+      }
+       if (p.get('name'))  document.getElementById('subName').value  = p.get('name');
+  if (p.get('email')) document.getElementById('subEmail').value = p.get('email');
+      if (p.get('success') === 'true') {
+        showSuccess(p.get('reference'), p.get('email'));
+      }
+      if (p.get('error')) {
+        const msgs = {
+          payment_failed: 'Payment was not completed. Please try again.',
+          no_reference:   'Payment reference missing. Please try again.',
+          server_error:   'Server error. Please try again.'
+        };
+        showError(msgs[p.get('error')] || 'Payment failed.');
+      }
+    });
+
+    async function startPayment() {
+      const name  = document.getElementById('subName').value.trim();
+      const email = document.getElementById('subEmail').value.trim();
+      const alert = document.getElementById('formAlert');
+      const btn   = document.getElementById('payBtn');
+
+      alert.innerHTML = '';
+      if (!name)  { alert.innerHTML = '<div class="alert alert-error">⚠️ Please enter your full name.</div>'; return; }
+      if (!email || !/^\S+@\S+\.\S+$/.test(email)) { alert.innerHTML = '<div class="alert alert-error">⚠️ Please enter a valid email address.</div>'; return; }
+
+      btn.disabled = true;
+      btn.innerHTML = '<span class="spinner"></span> Opening payment...';
+
+      try {
+        // Create pending subscription on our server
+        const res  = await fetch(`${API}/paystack/initialize`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name, email })
+        });
+        const data = await res.json();
+
+        if (!data.success) {
+          alert.innerHTML = `<div class="alert alert-error">❌ ${data.message}</div>`;
+          btn.disabled = false;
+          btn.innerHTML = '💳 Subscribe &amp; Pay KSh 30';
+          return;
+        }
+
+        setStep(2);
+
+        // Open Paystack payment popup
+        const handler = PaystackPop.setup({
+          key:      PAYSTACK_PK,
+          email:    email,
+          amount:   3000, // KSh 30 in kobo
+          currency: 'KES',
+          ref:      data.reference,
+          metadata: { name, custom_fields: [{ display_name:'Subscriber Name', variable_name:'subscriber_name', value: name }] },
+
+          // Payment successful
+          callback: function(response) {
+            confirmPayment(response.reference, email);
+          },
+
+          // User closed the popup without paying
+          onClose: function() {
+            btn.disabled = false;
+            btn.innerHTML = '💳 Subscribe &amp; Pay KSh 30';
+            setStep(1);
+            alert.innerHTML = '<div class="alert alert-warning">⚠️ Payment window closed. Click the button to try again.</div>';
+          }
+        });
+
+        handler.openIframe();
+
+      } catch (err) {
+        alert.innerHTML = '<div class="alert alert-error">❌ Cannot connect to server. Is the backend running on port 5000?</div>';
+        btn.disabled = false;
+        btn.innerHTML = '💳 Subscribe &amp; Pay KSh 30';
+        setStep(1);
+      }
+    }
+
+    // After payment, poll our server to confirm subscription is active
+    async function confirmPayment(reference, email) {
+      document.getElementById('formPanel').classList.add('hidden');
+      document.getElementById('processingPanel').classList.remove('hidden');
+
+      let attempts = 0;
+      const poll = setInterval(async () => {
+        attempts++;
+        try {
+          const res  = await fetch(`${API}/paystack/status/${reference}`);
+          const data = await res.json();
+          if (data.success && data.status === 'active') {
+            clearInterval(poll);
+            showSuccess(reference, email, data.expiryDate);
+          }
+        } catch (e) {}
+        // After 45 seconds, show success anyway (webhook will activate in background)
+        if (attempts >= 15) {
+          clearInterval(poll);
+          showSuccess(reference, email);
+        }
+      }, 3000);
+    }
+
+    function showSuccess(reference, email, expiryDate) {
+      ['formPanel','processingPanel','errorPanel','perksSection'].forEach(id => {
+        document.getElementById(id).classList.add('hidden');
+      });
+      document.getElementById('successPanel').classList.remove('hidden');
+      document.getElementById('receiptRef').textContent   = reference || '—';
+      document.getElementById('receiptEmail').textContent = email || '—';
+      if (expiryDate) {
+        document.getElementById('receiptExpiry').textContent =
+          new Date(expiryDate).toLocaleDateString('en-KE', { day:'numeric', month:'long', year:'numeric' });
+      }
+      setStep(3);
+    }
+
+    function showError(msg) {
+      ['formPanel','processingPanel','successPanel'].forEach(id => {
+        document.getElementById(id).classList.add('hidden');
+      });
+      document.getElementById('errorPanel').classList.remove('hidden');
+      document.getElementById('errorMsg').textContent = msg;
+    }
+
+    function resetForm() {
+      document.getElementById('errorPanel').classList.add('hidden');
+      document.getElementById('formPanel').classList.remove('hidden');
+      document.getElementById('perksSection').classList.remove('hidden');
+      document.getElementById('formAlert').innerHTML = '';
+      document.getElementById('payBtn').disabled = false;
+      document.getElementById('payBtn').innerHTML = '💳 Subscribe &amp; Pay KSh 30';
+      setStep(1);
+    }
+
+    function setStep(active) {
+      for (let i = 1; i <= 3; i++) {
+        const el = document.getElementById(`step${i}`);
+        el.classList.remove('active','done');
+        if (i < active) el.classList.add('done');
+        if (i === active) el.classList.add('active');
+      }
+    }
+  </script>
+</body>
+</html>
