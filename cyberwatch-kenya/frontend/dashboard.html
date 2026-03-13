@@ -215,7 +215,7 @@
         <div class="table-wrap">
           <table>
             <thead>
-              <tr><th>Reporter</th><th>Type</th><th>Platform</th><th>Amount Lost</th><th>Status</th><th>Date</th></tr>
+              <tr><th>Reporter</th><th>Type</th><th>Platform</th><th>Amount Lost</th><th>Status</th><th>Date</th><th>Details</th></tr>
             </thead>
             <tbody id="reportsTableBody">
               <tr><td colspan="6" style="text-align:center; padding:40px; color:var(--muted);">Loading...</td></tr>
@@ -229,5 +229,11 @@
 </div>
 
 <script src="js/dashboard.js"></script>
+  <!-- REPORT DETAIL MODAL -->
+  <div class="modal-overlay hidden" id="reportModal" onclick="if(event.target===this)closeReportModal()">
+    <div class="modal" id="reportModalContent" style="max-width:640px; width:90%; max-height:85vh; overflow-y:auto;">
+    </div>
+  </div>
+
 </body>
 </html>
