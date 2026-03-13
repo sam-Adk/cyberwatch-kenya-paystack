@@ -357,7 +357,10 @@ async function loadReports() {
       return;
     }
 
-    tbody.innerHTML = reports.map(r => `
+    // Store reports globally so viewReport() can look them up safely
+    window._cwkReports = reports;
+
+    tbody.innerHTML = reports.map((r, index) => `
       <tr>
         <td style="font-weight:600;">${escapeHTML(r.reporterName)}</td>
         <td><span class="category-badge ${getCategoryClass(r.scamType)}">${r.scamType}</span></td>
@@ -368,7 +371,7 @@ async function loadReports() {
         <td><span class="status-badge ${r.status === 'published' ? 'status-published' : 'status-draft'}">${r.status}</span></td>
         <td class="font-mono" style="font-size:11px; color:var(--muted);">${new Date(r.createdAt).toLocaleDateString('en-KE')}</td>
         <td>
-          <button class="btn btn-outline btn-sm" onclick="viewReport(${JSON.stringify(r).split('`').join('')})" style="font-size:11px; padding:4px 10px;">
+          <button class="btn btn-outline btn-sm" onclick="viewReport(${index})" style="font-size:11px; padding:4px 10px;">
             👁 View
           </button>
         </td>
@@ -388,7 +391,9 @@ async function loadReports() {
 // VIEW REPORT MODAL
 // ─────────────────────────────────────────────
 
-function viewReport(r) {
+function viewReport(index) {
+  const r = window._cwkReports[index];
+  if (!r) return;
   const modal = document.getElementById('reportModal');
   const content = document.getElementById('reportModalContent');
 
