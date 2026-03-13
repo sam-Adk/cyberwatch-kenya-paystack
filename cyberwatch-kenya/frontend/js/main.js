@@ -16,7 +16,7 @@
 // CONFIGURATION
 // ─────────────────────────────────────────────
 
-const API = 'http://localhost:5000/api';
+const API = 'https://cyberwatch-kenya.onrender.com/api';
 
 // State
 let currentPage = 1;
