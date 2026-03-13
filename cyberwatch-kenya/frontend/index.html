@@ -515,45 +515,7 @@
     requestAnimationFrame(update);
   }
 
-  // ── LOAD SOCIAL PROOF STATS ─────────────────
-  async function loadSocialProofStats() {
-    try {
-      const [alertsRes, subsRes, reportsRes] = await Promise.all([
-        fetch(`${API}/newsletters?limit=1`),
-        fetch(`${API}/subscribers/count`),
-        fetch(`${API}/subscribers/reports/count`)
-      ]);
-
-      const alertsData  = await alertsRes.json();
-      const subsData    = await subsRes.json().catch(() => ({ count: 0 }));
-      const reportsData = await reportsRes.json().catch(() => ({ count: 0 }));
-
-      const totalAlerts  = alertsData.total || alertsData.data?.length || 0;
-      const totalSubs    = subsData.count || 0;
-      const totalReports = reportsData.count || 0;
-
-      // Animate counters when they scroll into view
-      const observer = new IntersectionObserver((entries) => {
-        entries.forEach(entry => {
-          if (entry.isIntersecting) {
-            animateCounter(document.getElementById('proStatSubs'),    totalSubs,    '+');
-            animateCounter(document.getElementById('proStatAlerts'),  totalAlerts,  '+');
-            animateCounter(document.getElementById('proStatReports'), totalReports, '+');
-            observer.disconnect();
-          }
-        });
-      }, { threshold: 0.3 });
-
-      const statsSection = document.getElementById('social-proof');
-      if (statsSection) observer.observe(statsSection);
-
-    } catch (err) {
-      // Fallback static numbers if API fails
-      document.getElementById('proStatSubs').textContent    = '500+';
-      document.getElementById('proStatAlerts').textContent  = '50+';
-      document.getElementById('proStatReports').textContent = '200+';
-    }
-  }
+  // Social proof stats are loaded by main.js loadStats()
 
   function escapeHtml(str) {
     if (!str) return '';
@@ -563,7 +525,6 @@
   // Load both on page ready
   document.addEventListener('DOMContentLoaded', () => {
     loadScamOfWeek();
-    loadSocialProofStats();
   });
   </script>
   <script>
