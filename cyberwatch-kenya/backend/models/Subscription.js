@@ -25,7 +25,7 @@ const subscriptionSchema = new mongoose.Schema({
   },
   amount: {
     type: Number,
-    default: 30 // KSh 30 per month
+    default: 50 // KSh 50 per month
   },
 
   // Daraja API tracking
