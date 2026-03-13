@@ -92,6 +92,26 @@ router.post('/report-scam', [
   }
 });
 
+// ── PUBLIC: GET SUBSCRIBER COUNT ───────────────
+router.get('/count', async (req, res) => {
+  try {
+    const count = await Subscriber.countDocuments({ active: true });
+    res.json({ success: true, count });
+  } catch (error) {
+    res.status(500).json({ success: false, count: 0 });
+  }
+});
+
+// ── PUBLIC: GET REPORTS COUNT ───────────────────
+router.get('/reports/count', async (req, res) => {
+  try {
+    const count = await ScamReport.countDocuments();
+    res.json({ success: true, count });
+  } catch (error) {
+    res.status(500).json({ success: false, count: 0 });
+  }
+});
+
 // ── ADMIN: GET ALL SUBSCRIBERS ──────────────────
 router.get('/admin/list', protect, async (req, res) => {
   try {
