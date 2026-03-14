@@ -305,6 +305,7 @@ async function submitScamReport() {
   const type = document.getElementById('reportType').value;
   const platform = document.getElementById('reportPlatform').value.trim();
   const amount = document.getElementById('reportAmount').value || 0;
+  const county = document.getElementById('reportCounty')?.value || '';
   const description = document.getElementById('reportDescription').value.trim();
   const btn = document.getElementById('reportBtn');
   const alertBox = document.getElementById('reportAlert');
@@ -337,6 +338,7 @@ async function submitScamReport() {
       // Clear form
       ['reportName','reportEmail','reportPlatform','reportAmount','reportDescription'].forEach(id => document.getElementById(id).value = '');
       document.getElementById('reportType').value = '';
+      if(document.getElementById('reportCounty')) document.getElementById('reportCounty').value = '';
       alertBox.innerHTML = '';
 
       // Show thank you modal
