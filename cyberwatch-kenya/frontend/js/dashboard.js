@@ -368,6 +368,24 @@ function sendNewsletter(id) {
   document.body.style.overflow = 'hidden';
 }
 
+function toggleSMS() {
+  const cb    = document.getElementById('smsToggle');
+  const track = document.getElementById('smsToggleTrack');
+  const thumb = document.getElementById('smsToggleThumb');
+  cb.checked = !cb.checked;
+  if (cb.checked) {
+    track.style.background = 'rgba(0,204,255,0.2)';
+    track.style.borderColor = '#00ccff';
+    thumb.style.background = '#00ccff';
+    thumb.style.transform = 'translateX(20px)';
+  } else {
+    track.style.background = '#1a2a1a';
+    track.style.borderColor = '#2a4a2a';
+    thumb.style.background = '#557755';
+    thumb.style.transform = 'translateX(0)';
+  }
+}
+
 function selectSendAudience(value) {
   _sendingAudience = value;
   ['all','free','premium'].forEach(v => {
@@ -387,6 +405,9 @@ function closeSendModal() {
   document.getElementById('sendModal').classList.add('hidden');
   document.body.style.overflow = '';
   _sendingPostId = null;
+  // Reset SMS toggle
+  const cb = document.getElementById('smsToggle');
+  if (cb) { cb.checked = false; toggleSMS(); cb.checked = false; }
 }
 
 async function confirmSendNewsletter() {
@@ -397,9 +418,10 @@ async function confirmSendNewsletter() {
   btn.innerHTML = '<span class="spinner"></span> Sending...';
 
   try {
+    const sendSMS = document.getElementById('smsToggle')?.checked || false;
     const res = await authFetch(`${API}/newsletters/${_sendingPostId}/send`, {
       method: 'POST',
-      body: JSON.stringify({ audience: _sendingAudience })
+      body: JSON.stringify({ audience: _sendingAudience, sendSMS })
     });
     const data = await res.json();
 
@@ -444,6 +466,9 @@ async function loadSubscribers() {
       <tr>
         <td style="font-weight:600;">${escapeHTML(s.name)}</td>
         <td class="font-mono" style="font-size:12px;">${escapeHTML(s.email)}</td>
+        <td class="font-mono" style="font-size:12px;color:${s.phone ? 'var(--green)' : 'var(--muted)'};">
+          ${s.phone ? '📱 ' + escapeHTML(s.phone) : '—'}
+        </td>
         <td>
           ${s.plan === 'premium'
             ? '<span style="background:#00ccff;color:#000;font-size:10px;font-weight:800;padding:3px 10px;border-radius:10px;letter-spacing:1px;">⭐ PREMIUM</span>'
