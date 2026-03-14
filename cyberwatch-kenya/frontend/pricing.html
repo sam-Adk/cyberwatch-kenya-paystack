@@ -1,0 +1,692 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pricing — CyberWatch Kenya</title>
+  <meta name="description" content="Choose your protection level. Free scam alerts or Premium with SMS, weekly digest and personal security support.">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Source+Serif+4:ital,wght@0,300;0,400;0,600;1,400&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Source Serif 4', Georgia, serif; }
+
+    .pricing-hero {
+      padding: 140px 0 80px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .pricing-hero::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 50%;
+      transform: translateX(-50%);
+      width: 800px; height: 400px;
+      background: radial-gradient(ellipse, rgba(0,255,65,0.06), transparent 70%);
+      pointer-events: none;
+    }
+
+    .pricing-eyebrow {
+      font-family: 'Courier New', monospace;
+      font-size: 11px;
+      letter-spacing: 3px;
+      color: #00ff41;
+      margin-bottom: 20px;
+      display: block;
+    }
+
+    .pricing-title {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(2.2rem, 5vw, 3.6rem);
+      font-weight: 900;
+      color: #fff;
+      margin: 0 0 20px;
+      line-height: 1.1;
+    }
+
+    .pricing-title em { color: #00ff41; font-style: italic; }
+
+    .pricing-sub {
+      font-size: 1.05rem;
+      color: #778877;
+      max-width: 520px;
+      margin: 0 auto 16px;
+      line-height: 1.8;
+      font-weight: 300;
+    }
+
+    .pricing-value-prop {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(255,204,0,0.08);
+      border: 1px solid rgba(255,204,0,0.2);
+      border-radius: 20px;
+      padding: 8px 20px;
+      font-size: 13px;
+      color: #ffcc00;
+      font-family: 'Courier New', monospace;
+      margin-top: 8px;
+    }
+
+    /* ── PLANS GRID ── */
+    .plans-section { padding: 60px 0 100px; }
+
+    .plans-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 20px;
+      align-items: start;
+    }
+
+    .plan-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 32px 28px;
+      position: relative;
+      overflow: hidden;
+      transition: transform 0.3s, border-color 0.3s, box-shadow 0.3s;
+    }
+
+    .plan-card:hover {
+      transform: translateY(-8px);
+      box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+    }
+
+    .plan-card.featured {
+      background: linear-gradient(145deg, #0a1a0a, #0d2010);
+      border-color: rgba(0,255,65,0.4);
+      transform: translateY(-12px);
+      box-shadow: 0 24px 80px rgba(0,255,65,0.08);
+    }
+
+    .plan-card.featured:hover {
+      transform: translateY(-20px);
+    }
+
+    .plan-card.personal {
+      background: linear-gradient(145deg, #0a1020, #0d1530);
+      border-color: rgba(0,204,255,0.3);
+    }
+
+    .plan-card.business {
+      background: linear-gradient(145deg, #1a1000, #201500);
+      border-color: rgba(201,168,76,0.3);
+    }
+
+    .plan-card.business:hover {
+      border-color: rgba(201,168,76,0.6);
+    }
+
+    /* Top gradient line */
+    .plan-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 2px;
+    }
+
+    .plan-card.free::before    { background: linear-gradient(90deg, transparent, #557755, transparent); }
+    .plan-card.featured::before { background: linear-gradient(90deg, transparent, #00ff41, transparent); }
+    .plan-card.personal::before { background: linear-gradient(90deg, transparent, #00ccff, transparent); }
+    .plan-card.business::before { background: linear-gradient(90deg, transparent, #c9a84c, transparent); }
+
+    .plan-badge {
+      display: inline-block;
+      font-family: 'Courier New', monospace;
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: 2px;
+      padding: 4px 12px;
+      border-radius: 20px;
+      margin-bottom: 20px;
+    }
+
+    .plan-badge.free     { background: rgba(85,119,85,0.2); color: #557755; border: 1px solid #1e3a1e; }
+    .plan-badge.popular  { background: rgba(0,255,65,0.15); color: #00ff41; border: 1px solid rgba(0,255,65,0.3); }
+    .plan-badge.personal { background: rgba(0,204,255,0.15); color: #00ccff; border: 1px solid rgba(0,204,255,0.3); }
+    .plan-badge.business { background: rgba(201,168,76,0.15); color: #c9a84c; border: 1px solid rgba(201,168,76,0.3); }
+
+    .plan-name {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.4rem;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 8px;
+    }
+
+    .plan-desc {
+      font-size: 13px;
+      color: #557755;
+      margin-bottom: 24px;
+      line-height: 1.6;
+      min-height: 40px;
+    }
+
+    .plan-price {
+      margin-bottom: 28px;
+      padding-bottom: 28px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .plan-amount {
+      font-family: 'Courier New', monospace;
+      font-size: 2.4rem;
+      font-weight: 700;
+      color: #fff;
+      line-height: 1;
+    }
+
+    .plan-amount.free-amount { color: #557755; }
+    .plan-amount.premium-amount { color: #00ff41; }
+    .plan-amount.personal-amount { color: #00ccff; }
+    .plan-amount.business-amount { color: #c9a84c; }
+
+    .plan-period {
+      font-size: 13px;
+      color: #557755;
+      margin-top: 4px;
+      font-family: 'Courier New', monospace;
+    }
+
+    .plan-features { list-style: none; padding: 0; margin: 0 0 28px; }
+
+    .plan-features li {
+      font-size: 13px;
+      color: #aabbaa;
+      padding: 7px 0;
+      border-bottom: 1px solid rgba(255,255,255,0.04);
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      line-height: 1.5;
+    }
+
+    .plan-features li:last-child { border: none; }
+
+    .plan-features li .check {
+      color: #00ff41;
+      font-size: 12px;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+
+    .plan-features li.highlight {
+      color: #ddeedd;
+      font-weight: 500;
+    }
+
+    .plan-features li .check.blue  { color: #00ccff; }
+    .plan-features li .check.gold  { color: #c9a84c; }
+    .plan-features li .check.muted { color: #334433; }
+
+    .plan-cta {
+      display: block;
+      width: 100%;
+      text-align: center;
+      padding: 14px;
+      border-radius: 10px;
+      font-family: 'Courier New', monospace;
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-decoration: none;
+      transition: all 0.2s;
+      cursor: pointer;
+      border: none;
+    }
+
+    .plan-cta.free-cta     { background: rgba(85,119,85,0.15); color: #557755; border: 1px solid #1e3a1e; }
+    .plan-cta.free-cta:hover { background: rgba(85,119,85,0.25); color: #aabbaa; }
+    .plan-cta.premium-cta  { background: #00ff41; color: #000; }
+    .plan-cta.premium-cta:hover { background: #00cc33; transform: translateY(-1px); }
+    .plan-cta.personal-cta { background: rgba(0,204,255,0.15); color: #00ccff; border: 1px solid rgba(0,204,255,0.3); }
+    .plan-cta.personal-cta:hover { background: rgba(0,204,255,0.25); }
+    .plan-cta.business-cta { background: rgba(201,168,76,0.15); color: #c9a84c; border: 1px solid rgba(201,168,76,0.3); }
+    .plan-cta.business-cta:hover { background: rgba(201,168,76,0.25); }
+
+    /* ── COMPARISON TABLE ── */
+    .compare-section {
+      padding: 0 0 100px;
+    }
+
+    .compare-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 48px;
+    }
+
+    .compare-table th {
+      padding: 16px 20px;
+      font-family: 'Courier New', monospace;
+      font-size: 11px;
+      letter-spacing: 1px;
+      font-weight: 700;
+      text-align: center;
+      border-bottom: 2px solid var(--border);
+    }
+
+    .compare-table th:first-child { text-align: left; }
+    .compare-table th.th-free     { color: #557755; }
+    .compare-table th.th-premium  { color: #00ff41; background: rgba(0,255,65,0.04); border-radius: 8px 8px 0 0; }
+    .compare-table th.th-personal { color: #00ccff; }
+    .compare-table th.th-business { color: #c9a84c; }
+
+    .compare-table td {
+      padding: 14px 20px;
+      font-size: 13px;
+      color: #778877;
+      border-bottom: 1px solid rgba(255,255,255,0.04);
+      text-align: center;
+      vertical-align: middle;
+    }
+
+    .compare-table td:first-child {
+      text-align: left;
+      color: #aabbaa;
+      font-size: 14px;
+    }
+
+    .compare-table td.premium-col { background: rgba(0,255,65,0.03); }
+    .compare-table tr:hover td { background: rgba(255,255,255,0.02); }
+    .compare-table tr:hover td.premium-col { background: rgba(0,255,65,0.06); }
+
+    .check-yes  { color: #00ff41; font-size: 16px; }
+    .check-no   { color: #223322; font-size: 16px; }
+    .check-gold { color: #c9a84c; font-size: 16px; }
+    .check-blue { color: #00ccff; font-size: 16px; }
+
+    /* ── FAQ ── */
+    .faq-section { padding: 80px 0 100px; background: rgba(0,255,65,0.02); }
+
+    .faq-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      margin-top: 48px;
+    }
+
+    .faq-item {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 24px;
+      transition: border-color 0.2s;
+    }
+
+    .faq-item:hover { border-color: rgba(0,255,65,0.2); }
+
+    .faq-q {
+      font-family: 'Playfair Display', serif;
+      font-size: 1rem;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 10px;
+    }
+
+    .faq-a {
+      font-size: 13px;
+      color: #778877;
+      line-height: 1.7;
+      margin: 0;
+    }
+
+    /* Section labels */
+    .section-label {
+      font-family: 'Courier New', monospace;
+      font-size: 11px;
+      letter-spacing: 3px;
+      color: #00ff41;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .section-label::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: linear-gradient(to right, #1e3a1e, transparent);
+    }
+
+    .story-title {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(1.8rem, 3vw, 2.4rem);
+      font-weight: 900;
+      color: #fff;
+      line-height: 1.2;
+      margin: 0 0 16px;
+    }
+
+    @media (max-width: 1000px) {
+      .plans-grid { grid-template-columns: 1fr 1fr; }
+      .plan-card.featured { transform: none; }
+    }
+
+    @media (max-width: 640px) {
+      .plans-grid { grid-template-columns: 1fr; }
+      .faq-grid { grid-template-columns: 1fr; }
+      .compare-table { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+  <nav class="navbar">
+    <div class="container">
+      <a href="index.html" class="navbar-brand">
+        <span class="shield-icon">🛡️</span>
+        CyberWatch<span class="text-cyan">Kenya</span>
+      </a>
+      <ul class="navbar-links">
+        <li><a href="index.html">Home</a></li>
+        <li><a href="index.html#alerts">Scam Alerts</a></li>
+        <li><a href="pricing.html" class="active">Pricing</a></li>
+        <li><a href="about.html">About</a></li>
+        <li><a href="subscribe.html" class="btn btn-outline btn-sm">Subscribe</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <!-- ═══ HERO ═══ -->
+  <section class="pricing-hero">
+    <div class="container">
+      <span class="pricing-eyebrow">CHOOSE YOUR PROTECTION</span>
+      <h1 class="pricing-title">
+        Stay safe from<br>
+        <em>KSh 0 a month</em>
+      </h1>
+      <p class="pricing-sub">
+        From free scam alerts to full personal cybersecurity support — we have a plan for every Kenyan.
+      </p>
+      <div class="pricing-value-prop">
+        💡 One M-PESA scam costs more than a year of Premium protection
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ PLANS ═══ -->
+  <section class="plans-section">
+    <div class="container">
+      <div class="plans-grid">
+
+        <!-- FREE -->
+        <div class="plan-card free">
+          <div class="plan-badge free">FREE FOREVER</div>
+          <div class="plan-name">Basic</div>
+          <p class="plan-desc">Perfect for getting started with scam awareness</p>
+          <div class="plan-price">
+            <div class="plan-amount free-amount">KSh 0</div>
+            <div class="plan-period">forever free</div>
+          </div>
+          <ul class="plan-features">
+            <li><span class="check">✓</span> Weekly scam alert emails</li>
+            <li><span class="check">✓</span> Access to public scam database</li>
+            <li><span class="check">✓</span> Cybersecurity tips</li>
+            <li><span class="check">✓</span> Submit scam reports</li>
+            <li><span class="check muted">—</span> <span style="color:#334433;">SMS instant alerts</span></li>
+            <li><span class="check muted">—</span> <span style="color:#334433;">Weekly digest</span></li>
+            <li><span class="check muted">—</span> <span style="color:#334433;">Personal support</span></li>
+          </ul>
+          <a href="subscribe.html" class="plan-cta free-cta">Get Started Free →</a>
+        </div>
+
+        <!-- PREMIUM -->
+        <div class="plan-card featured">
+          <div class="plan-badge popular">⭐ MOST POPULAR</div>
+          <div class="plan-name">Premium</div>
+          <p class="plan-desc">For Kenyans who want maximum digital protection</p>
+          <div class="plan-price">
+            <div class="plan-amount premium-amount">KSh 99</div>
+            <div class="plan-period">per month</div>
+          </div>
+          <ul class="plan-features">
+            <li class="highlight"><span class="check">✓</span> Everything in Basic</li>
+            <li class="highlight"><span class="check">✓</span> <strong>Instant SMS scam alerts</strong></li>
+            <li class="highlight"><span class="check">✓</span> <strong>Weekly scam digest every Monday</strong></li>
+            <li class="highlight"><span class="check">✓</span> Priority alerts 24hrs early</li>
+            <li><span class="check">✓</span> Premium member badge</li>
+            <li><span class="check">✓</span> Support our mission</li>
+            <li><span class="check muted">—</span> <span style="color:#334433;">Personal security audit</span></li>
+          </ul>
+          <a href="subscribe.html?plan=premium" class="plan-cta premium-cta">Get Premium →</a>
+        </div>
+
+        <!-- PERSONAL PROTECTION -->
+        <div class="plan-card personal">
+          <div class="plan-badge personal">🔐 PERSONAL</div>
+          <div class="plan-name">Personal Pro</div>
+          <p class="plan-desc">Direct access to Samuel for personal security guidance</p>
+          <div class="plan-price">
+            <div class="plan-amount personal-amount">KSh 499</div>
+            <div class="plan-period">per month</div>
+          </div>
+          <ul class="plan-features">
+            <li class="highlight"><span class="check blue">✓</span> Everything in Premium</li>
+            <li class="highlight"><span class="check blue">✓</span> <strong>Monthly personal security audit</strong></li>
+            <li class="highlight"><span class="check blue">✓</span> <strong>Direct WhatsApp access</strong></li>
+            <li><span class="check blue">✓</span> "Is this a scam?" verification</li>
+            <li><span class="check blue">✓</span> Device security checklist</li>
+            <li><span class="check blue">✓</span> Account security review</li>
+            <li><span class="check blue">✓</span> Priority scam report response</li>
+          </ul>
+          <a href="https://wa.me/254743355434?text=Hi%20Samuel%2C%20I%27m%20interested%20in%20the%20Personal%20Pro%20plan%20on%20CyberWatch%20Kenya"
+             target="_blank" class="plan-cta personal-cta">Contact Samuel →</a>
+        </div>
+
+        <!-- BUSINESS -->
+        <div class="plan-card business">
+          <div class="plan-badge business">🏢 BUSINESS</div>
+          <div class="plan-name">Business</div>
+          <p class="plan-desc">Protect your entire team — SACCOs, schools, businesses</p>
+          <div class="plan-price">
+            <div class="plan-amount business-amount">KSh 2,000</div>
+            <div class="plan-period">per month / up to 10 staff</div>
+          </div>
+          <ul class="plan-features">
+            <li class="highlight"><span class="check gold">✓</span> Everything in Personal Pro</li>
+            <li class="highlight"><span class="check gold">✓</span> <strong>Up to 10 staff members</strong></li>
+            <li class="highlight"><span class="check gold">✓</span> <strong>Monthly security training</strong></li>
+            <li><span class="check gold">✓</span> Industry-specific alerts</li>
+            <li><span class="check gold">✓</span> Custom scam reports</li>
+            <li><span class="check gold">✓</span> Incident response support</li>
+            <li><span class="check gold">✓</span> Priority everything</li>
+          </ul>
+          <a href="https://wa.me/254743355434?text=Hi%20Samuel%2C%20I%27m%20interested%20in%20the%20Business%20plan%20on%20CyberWatch%20Kenya"
+             target="_blank" class="plan-cta business-cta">Contact Samuel →</a>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ COMPARISON TABLE ═══ -->
+  <section class="compare-section">
+    <div class="container">
+      <div class="section-label">FULL COMPARISON</div>
+      <h2 class="story-title">Everything side by side</h2>
+
+      <table class="compare-table">
+        <thead>
+          <tr>
+            <th style="width:30%;text-align:left;color:#778877;">Feature</th>
+            <th class="th-free">Basic<br><span style="font-weight:400;">KSh 0</span></th>
+            <th class="th-premium">⭐ Premium<br><span style="font-weight:400;">KSh 99/mo</span></th>
+            <th class="th-personal">Personal Pro<br><span style="font-weight:400;">KSh 499/mo</span></th>
+            <th class="th-business">Business<br><span style="font-weight:400;">KSh 2,000/mo</span></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Scam alert emails</td>
+            <td><span class="check-yes">✓</span></td>
+            <td class="premium-col"><span class="check-yes">✓</span></td>
+            <td><span class="check-yes">✓</span></td>
+            <td><span class="check-gold">✓</span></td>
+          </tr>
+          <tr>
+            <td>Public scam database access</td>
+            <td><span class="check-yes">✓</span></td>
+            <td class="premium-col"><span class="check-yes">✓</span></td>
+            <td><span class="check-yes">✓</span></td>
+            <td><span class="check-gold">✓</span></td>
+          </tr>
+          <tr>
+            <td>Instant SMS alerts</td>
+            <td><span class="check-no">✗</span></td>
+            <td class="premium-col"><span class="check-yes">✓</span></td>
+            <td><span class="check-yes">✓</span></td>
+            <td><span class="check-gold">✓</span></td>
+          </tr>
+          <tr>
+            <td>Weekly Monday digest</td>
+            <td><span class="check-no">✗</span></td>
+            <td class="premium-col"><span class="check-yes">✓</span></td>
+            <td><span class="check-yes">✓</span></td>
+            <td><span class="check-gold">✓</span></td>
+          </tr>
+          <tr>
+            <td>Priority alerts (24hrs early)</td>
+            <td><span class="check-no">✗</span></td>
+            <td class="premium-col"><span class="check-yes">✓</span></td>
+            <td><span class="check-yes">✓</span></td>
+            <td><span class="check-gold">✓</span></td>
+          </tr>
+          <tr>
+            <td>Direct WhatsApp access to Samuel</td>
+            <td><span class="check-no">✗</span></td>
+            <td class="premium-col"><span class="check-no">✗</span></td>
+            <td><span class="check-blue">✓</span></td>
+            <td><span class="check-gold">✓</span></td>
+          </tr>
+          <tr>
+            <td>Monthly personal security audit</td>
+            <td><span class="check-no">✗</span></td>
+            <td class="premium-col"><span class="check-no">✗</span></td>
+            <td><span class="check-blue">✓</span></td>
+            <td><span class="check-gold">✓</span></td>
+          </tr>
+          <tr>
+            <td>"Is this a scam?" verification</td>
+            <td><span class="check-no">✗</span></td>
+            <td class="premium-col"><span class="check-no">✗</span></td>
+            <td><span class="check-blue">✓</span></td>
+            <td><span class="check-gold">✓</span></td>
+          </tr>
+          <tr>
+            <td>Staff members covered</td>
+            <td>1</td>
+            <td class="premium-col">1</td>
+            <td>1</td>
+            <td><span style="color:#c9a84c;font-weight:700;">Up to 10</span></td>
+          </tr>
+          <tr>
+            <td>Monthly security training session</td>
+            <td><span class="check-no">✗</span></td>
+            <td class="premium-col"><span class="check-no">✗</span></td>
+            <td><span class="check-no">✗</span></td>
+            <td><span class="check-gold">✓</span></td>
+          </tr>
+          <tr>
+            <td>Industry-specific scam reports</td>
+            <td><span class="check-no">✗</span></td>
+            <td class="premium-col"><span class="check-no">✗</span></td>
+            <td><span class="check-no">✗</span></td>
+            <td><span class="check-gold">✓</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ═══ FAQ ═══ -->
+  <section class="faq-section">
+    <div class="container">
+      <div class="section-label">COMMON QUESTIONS</div>
+      <h2 class="story-title">Everything you need to know</h2>
+
+      <div class="faq-grid">
+        <div class="faq-item">
+          <div class="faq-q">Is the free plan really free forever?</div>
+          <p class="faq-a">Yes, completely. No credit card needed, no hidden charges. The free plan gives you weekly scam alert emails and access to our public scam database with no expiry date.</p>
+        </div>
+        <div class="faq-item">
+          <div class="faq-q">How do I pay for Premium?</div>
+          <p class="faq-a">Premium is KSh 99/month paid securely via M-PESA, debit card, or bank transfer through Paystack — Kenya's most trusted payment platform.</p>
+        </div>
+        <div class="faq-item">
+          <div class="faq-q">What is the Personal Pro plan exactly?</div>
+          <p class="faq-a">You get direct WhatsApp access to Samuel Adikah, our founder and security analyst. Every month he reviews your accounts and devices for vulnerabilities, and you can message him anytime to verify if something looks like a scam.</p>
+        </div>
+        <div class="faq-item">
+          <div class="faq-q">Can I cancel anytime?</div>
+          <p class="faq-a">Yes. Cancel anytime with no penalties. If you cancel Premium, you automatically drop to the free plan and continue receiving weekly email alerts.</p>
+        </div>
+        <div class="faq-item">
+          <div class="faq-q">Who is the Business plan for?</div>
+          <p class="faq-a">SACCOs, schools, churches, NGOs, and small businesses in Kenya. If your organisation handles money or personal data, your staff need cybersecurity awareness. We cover up to 10 people for KSh 2,000/month.</p>
+        </div>
+        <div class="faq-item">
+          <div class="faq-q">How quickly do alerts arrive?</div>
+          <p class="faq-a">Free subscribers receive alerts within hours of publication. Premium subscribers receive email alerts instantly AND an SMS within seconds of publication — before the alert is even visible on the website.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ CTA ═══ -->
+  <section style="padding:80px 0; text-align:center; position:relative; overflow:hidden;">
+    <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:600px;height:300px;background:radial-gradient(ellipse,rgba(0,255,65,0.05),transparent 70%);pointer-events:none;"></div>
+    <div class="container" style="position:relative;">
+      <p style="font-family:'Courier New',monospace;font-size:11px;color:#00ff41;letter-spacing:3px;margin:0 0 20px;">START TODAY</p>
+      <h2 style="font-family:'Playfair Display',serif;font-size:clamp(1.8rem,4vw,2.8rem);font-weight:900;color:#fff;margin:0 0 16px;">
+        One scam could cost you more<br>than <em style="color:#00ff41;">a year of Premium</em>
+      </h2>
+      <p style="font-size:15px;color:#778877;margin:0 0 36px;max-width:480px;margin-left:auto;margin-right:auto;line-height:1.7;">
+        The average M-PESA scam in Kenya costs KSh 3,000–15,000. CyberWatch Kenya Premium costs KSh 99/month. The math is simple.
+      </p>
+      <div style="display:flex;gap:16px;justify-content:center;flex-wrap:wrap;">
+        <a href="subscribe.html" class="btn btn-primary btn-lg">🛡️ Get Protected Now</a>
+        <a href="about.html" class="btn btn-outline btn-lg">Learn About Us</a>
+      </div>
+    </div>
+  </section>
+
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div>
+          <div class="footer-brand">🛡️ CyberWatch Kenya</div>
+          <p class="footer-desc">Protecting Kenyans from online scams, phishing attacks, and cyber fraud.</p>
+        </div>
+        <div>
+          <div class="footer-heading">Quick Links</div>
+          <ul class="footer-links">
+            <li><a href="index.html">Home</a></li>
+            <li><a href="index.html#alerts">Scam Alerts</a></li>
+            <li><a href="pricing.html">Pricing</a></li>
+            <li><a href="about.html">About</a></li>
+          </ul>
+        </div>
+        <div>
+          <div class="footer-heading">Contact Samuel</div>
+          <ul class="footer-links">
+            <li><a href="https://wa.me/254743355434" target="_blank">💬 WhatsApp</a></li>
+            <li><a href="mailto:securedatakenya@gmail.com">📧 Email Us</a></li>
+            <li><a href="index.html#report">🚨 Report a Scam</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <span class="footer-bottom-text">© 2024 CyberWatch Kenya. All rights reserved.</span>
+        <span class="footer-bottom-text">Built to protect Kenyans 🇰🇪</span>
+      </div>
+    </div>
+  </footer>
+
+</body>
+</html>
