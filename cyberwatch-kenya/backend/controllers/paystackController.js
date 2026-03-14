@@ -32,6 +32,7 @@ const AMOUNT_IN_KOBO = SUBSCRIPTION_AMOUNT * 100; // Paystack uses kobo (cents)
 
 // Paystack base URL
 const PAYSTACK_URL = 'https://api.paystack.co';
+const { sendWelcomeSMS } = require('../utils/smsService');
 
 // ─────────────────────────────────────────────
 // STEP 1: INITIALIZE PAYMENT
@@ -112,15 +113,18 @@ exports.initializePayment = async (req, res) => {
     const { authorization_url, reference } = response.data.data;
 
     // Save subscriber as pending (not active yet)
+    const phone = req.body.phone || null;
     let subscriber = existingSubscriber;
     if (!subscriber) {
       subscriber = await Subscriber.create({
         name,
         email: email.toLowerCase(),
-        active: false // Will activate after payment confirmed
+        active: false, // Will activate after payment confirmed
+        phone
       });
     } else {
       subscriber.name = name;
+      if (phone) subscriber.phone = phone;
       await subscriber.save();
     }
 
@@ -273,6 +277,12 @@ async function activateSubscription(reference, email, metadata) {
 
     // Send welcome email
     await sendWelcomeEmail(subscription.subscriber, reference, expiryDate);
+
+    // Send welcome SMS if subscriber has a phone number
+    const sub = await Subscriber.findById(subscription.subscriber);
+    if (sub && sub.phone) {
+      sendWelcomeSMS(sub.phone, sub.name).catch(e => console.error('Welcome SMS error:', e.message));
+    }
 
     console.log(`✅ Subscription activated for ${email} until ${expiryDate}`);
 
