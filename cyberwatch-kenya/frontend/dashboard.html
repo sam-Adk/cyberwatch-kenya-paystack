@@ -257,7 +257,7 @@
         <div class="table-wrap">
           <table>
             <thead>
-              <tr><th>Name</th><th>Email</th><th>Plan</th><th>Status</th><th>Joined</th></tr>
+              <tr><th>Name</th><th>Email</th><th>Phone</th><th>Plan</th><th>Status</th><th>Joined</th></tr>
             </thead>
             <tbody id="subsTableBody">
               <tr><td colspan="4" style="text-align:center; padding:40px; color:var(--muted);">Loading...</td></tr>
@@ -318,6 +318,21 @@
           <div>
             <div style="font-size:14px;font-weight:700;color:#00ccff;">Premium subscribers only</div>
             <div style="font-size:12px;color:var(--muted);">Only send to paid premium members</div>
+          </div>
+        </label>
+      </div>
+
+      <!-- SMS Toggle -->
+      <div style="background:rgba(0,204,255,0.06);border:1px solid rgba(0,204,255,0.2);border-radius:8px;padding:14px 16px;margin-bottom:16px;">
+        <label style="display:flex;align-items:center;gap:12px;cursor:pointer;">
+          <div style="position:relative;width:44px;height:24px;flex-shrink:0;">
+            <input type="checkbox" id="smsToggle" style="opacity:0;width:0;height:0;position:absolute;">
+            <span id="smsToggleTrack" onclick="toggleSMS()" style="position:absolute;inset:0;background:#1a2a1a;border-radius:12px;border:1px solid #2a4a2a;cursor:pointer;transition:0.2s;"></span>
+            <span id="smsToggleThumb" style="position:absolute;top:3px;left:3px;width:16px;height:16px;background:#557755;border-radius:50%;transition:0.2s;pointer-events:none;"></span>
+          </div>
+          <div>
+            <div style="font-size:13px;font-weight:700;color:#fff;">📱 Also send SMS to premium subscribers</div>
+            <div style="font-size:11px;color:var(--muted);margin-top:2px;">Only premium members with phone numbers will receive SMS</div>
           </div>
         </label>
       </div>
