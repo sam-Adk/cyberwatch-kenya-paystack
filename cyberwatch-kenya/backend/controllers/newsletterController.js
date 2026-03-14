@@ -13,7 +13,8 @@
 
 const Newsletter = require('../models/Newsletter');
 const Subscriber = require('../models/Subscriber');
-const axios = require('axios');
+const axios      = require('axios');
+const { sendAlertSMS } = require('../utils/smsService');
 const { validationResult } = require('express-validator');
 
 // ─────────────────────────────────────────────
@@ -230,11 +231,22 @@ exports.sendNewsletter = async (req, res) => {
       sentAt: new Date()
     });
 
+    // Send SMS to premium subscribers if requested
+    let smsResult = { sent: 0, failed: 0 };
+    if (req.body.sendSMS === true || req.body.sendSMS === 'true') {
+      smsResult = await sendAlertSMS(newsletter);
+    }
+
+    const smsMsg = req.body.sendSMS
+      ? ` + SMS to ${smsResult.sent} premium subscriber${smsResult.sent !== 1 ? 's' : ''}`
+      : '';
+
     res.json({
-      success: true,
-      message: `Newsletter sent to ${sentCount} subscribers`,
+      success:   true,
+      message:   `Email sent to ${sentCount} subscriber${sentCount !== 1 ? 's' : ''}${smsMsg}`,
       sentCount,
-      errors: errors.length > 0 ? errors : undefined
+      smsSent:   smsResult.sent,
+      errors:    errors.length > 0 ? errors : undefined
     });
 
   } catch (error) {
