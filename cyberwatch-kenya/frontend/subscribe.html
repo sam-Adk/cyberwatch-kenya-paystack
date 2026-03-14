@@ -145,6 +145,11 @@
               <input type="email" class="form-control" id="subEmail" placeholder="e.g. john@gmail.com">
               <div class="form-hint">Scam alerts will be sent here</div>
             </div>
+            <div class="form-group" id="phoneGroup">
+              <label class="form-label">Phone Number <span style="font-size:11px;color:var(--muted);font-weight:400;" id="phoneLabel">(optional — for SMS alerts)</span></label>
+              <input type="tel" class="form-control" id="subPhone" placeholder="e.g. 0712 345 678">
+              <div class="form-hint" id="phoneHint">Free subscribers can add phone to receive SMS alerts when upgrading to Premium</div>
+            </div>
 
             <button class="btn btn-primary w-full btn-lg" id="actionBtn" onclick="handleSubscribe()" style="margin-top:8px;">
               Subscribe for Free
@@ -286,7 +291,7 @@
         const res  = await fetch(`${API}/subscribers/subscribe`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ name, email })
+          body: JSON.stringify({ name, email, phone: document.getElementById('subPhone').value.trim() || null })
         });
         const data = await res.json();
 
@@ -313,7 +318,7 @@
         const res  = await fetch(`${API}/paystack/initialize`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ name, email })
+          body: JSON.stringify({ name, email, phone: document.getElementById('subPhone').value.trim() || null })
         });
         const data = await res.json();
 
