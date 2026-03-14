@@ -47,6 +47,12 @@ const scamReportSchema = new mongoose.Schema({
     type: String, // e.g. WhatsApp, Facebook, Email
     trim: true
   },
+  // Kenya county where scam occurred
+  county: {
+    type: String,
+    trim: true,
+    default: null
+  },
   status: {
     type: String,
     enum: ['pending', 'reviewed', 'published'],
