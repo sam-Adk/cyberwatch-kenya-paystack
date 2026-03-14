@@ -106,6 +106,7 @@
           <button class="btn btn-outline" onclick="showTab('subscribers', null)">👥 View Subscribers</button>
           <button class="btn btn-outline" onclick="showTab('reports', null)">🚨 Review Reports</button>
           <button class="btn btn-outline" onclick="sendTestDigest()" style="border-color:#00ccff;color:#00ccff;">⭐ Send Weekly Digest Now</button>
+          <button class="btn btn-outline" onclick="openTestSMS()" style="border-color:#00ff41;color:#00ff41;">📱 Test SMS</button>
         </div>
       </div>
     </div>
@@ -290,6 +291,24 @@
 </div>
 
 <script src="js/dashboard.js"></script>
+  <!-- TEST SMS MODAL -->
+  <div class="modal-overlay hidden" id="testSMSModal" onclick="if(event.target===this)closeTestSMS()">
+    <div class="modal" style="max-width:400px;width:90%;padding:32px;">
+      <h2 style="margin:0 0 6px;color:#fff;font-size:1.2rem;">📱 Test SMS</h2>
+      <p style="margin:0 0 20px;font-size:13px;color:var(--muted);">Send a test SMS to verify Africa's Talking is working.</p>
+      <div class="form-group">
+        <label class="form-label">Phone Number</label>
+        <input type="tel" class="form-control" id="testSMSPhone" placeholder="e.g. 0712 345 678">
+        <div class="form-hint">Enter your own number to test</div>
+      </div>
+      <div id="testSMSResult" style="margin-bottom:16px;"></div>
+      <div style="display:flex;gap:10px;">
+        <button class="btn btn-primary" id="testSMSBtn" onclick="sendTestSMS()" style="flex:1;">📱 Send Test SMS</button>
+        <button class="btn btn-outline" onclick="closeTestSMS()">Close</button>
+      </div>
+    </div>
+  </div>
+
   <!-- SEND AUDIENCE MODAL -->
   <div class="modal-overlay hidden" id="sendModal" onclick="if(event.target===this)closeSendModal()">
     <div class="modal" style="max-width:420px;width:90%;padding:32px;">
