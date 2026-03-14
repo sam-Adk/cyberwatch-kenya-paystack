@@ -1,0 +1,725 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>About — CyberWatch Kenya</title>
+  <meta name="description" content="Meet Samuel Adikah, the founder of CyberWatch Kenya. Learn why he built Kenya's most trusted scam alert platform.">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Source+Serif+4:ital,wght@0,300;0,400;0,600;1,400&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --gold: #c9a84c;
+      --gold-light: #e8c87a;
+      --gold-dim: rgba(201,168,76,0.15);
+    }
+
+    body { font-family: 'Source Serif 4', Georgia, serif; }
+
+    /* ── HERO ── */
+    .about-hero {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      position: relative;
+      overflow: hidden;
+      padding: 120px 0 80px;
+    }
+
+    .about-hero::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 80% 60% at 20% 50%, rgba(0,255,65,0.04) 0%, transparent 60%),
+        radial-gradient(ellipse 60% 80% at 80% 30%, rgba(201,168,76,0.04) 0%, transparent 60%);
+    }
+
+    /* Scan lines */
+    .about-hero::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 3px,
+        rgba(0,255,65,0.008) 3px,
+        rgba(0,255,65,0.008) 4px
+      );
+      pointer-events: none;
+    }
+
+    .about-hero-grid {
+      display: grid;
+      grid-template-columns: 1fr 420px;
+      gap: 80px;
+      align-items: center;
+      position: relative;
+      z-index: 1;
+    }
+
+    .about-eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      font-family: 'Courier New', monospace;
+      font-size: 11px;
+      letter-spacing: 3px;
+      color: #00ff41;
+      margin-bottom: 24px;
+    }
+
+    .about-eyebrow::before {
+      content: '';
+      width: 32px;
+      height: 1px;
+      background: #00ff41;
+    }
+
+    .about-headline {
+      font-family: 'Playfair Display', Georgia, serif;
+      font-size: clamp(2.4rem, 5vw, 4rem);
+      font-weight: 900;
+      color: #fff;
+      line-height: 1.1;
+      margin: 0 0 28px;
+      letter-spacing: -1px;
+    }
+
+    .about-headline span {
+      color: #00ff41;
+      font-style: italic;
+    }
+
+    .about-lead {
+      font-size: 1.15rem;
+      color: #aabbaa;
+      line-height: 1.9;
+      margin: 0 0 36px;
+      font-weight: 300;
+    }
+
+    /* Founder card */
+    .founder-card {
+      background: linear-gradient(145deg, #0a1a0a, #0d2010);
+      border: 1px solid #1e3a1e;
+      border-radius: 20px;
+      padding: 36px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .founder-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, transparent, #00ff41, var(--gold), transparent);
+    }
+
+    .founder-avatar {
+      width: 90px;
+      height: 90px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #00ff41, #00cc33);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Playfair Display', serif;
+      font-size: 32px;
+      font-weight: 900;
+      color: #000;
+      margin: 0 auto 20px;
+      border: 3px solid rgba(0,255,65,0.3);
+      box-shadow: 0 0 30px rgba(0,255,65,0.15);
+    }
+
+    .founder-name {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.4rem;
+      font-weight: 700;
+      color: #fff;
+      text-align: center;
+      margin-bottom: 4px;
+    }
+
+    .founder-title {
+      font-family: 'Courier New', monospace;
+      font-size: 11px;
+      color: #00ff41;
+      letter-spacing: 2px;
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    .founder-quote {
+      font-size: 14px;
+      color: #aabbaa;
+      line-height: 1.8;
+      font-style: italic;
+      text-align: center;
+      border-top: 1px solid #1e3a1e;
+      padding-top: 20px;
+      margin: 0;
+    }
+
+    .founder-quote::before {
+      content: '"';
+      font-family: 'Playfair Display', serif;
+      font-size: 48px;
+      color: rgba(0,255,65,0.2);
+      display: block;
+      line-height: 0.6;
+      margin-bottom: 12px;
+    }
+
+    .founder-stats {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-top: 20px;
+    }
+
+    .founder-stat {
+      background: rgba(0,255,65,0.05);
+      border: 1px solid rgba(0,255,65,0.1);
+      border-radius: 10px;
+      padding: 12px;
+      text-align: center;
+    }
+
+    .founder-stat-num {
+      font-family: 'Courier New', monospace;
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: #00ff41;
+    }
+
+    .founder-stat-label {
+      font-size: 11px;
+      color: #557755;
+      margin-top: 2px;
+    }
+
+    /* ── STORY SECTION ── */
+    .story-section {
+      padding: 100px 0;
+      position: relative;
+    }
+
+    .story-section::before {
+      content: '';
+      position: absolute;
+      left: 50%;
+      top: 0; bottom: 0;
+      width: 1px;
+      background: linear-gradient(to bottom, transparent, #1e3a1e 20%, #1e3a1e 80%, transparent);
+      transform: translateX(-50%);
+    }
+
+    .story-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 80px;
+      align-items: start;
+    }
+
+    .story-sticky {
+      position: sticky;
+      top: 100px;
+    }
+
+    .section-label {
+      font-family: 'Courier New', monospace;
+      font-size: 11px;
+      letter-spacing: 3px;
+      color: #00ff41;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .section-label::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: linear-gradient(to right, #1e3a1e, transparent);
+    }
+
+    .story-title {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(1.8rem, 3vw, 2.6rem);
+      font-weight: 900;
+      color: #fff;
+      line-height: 1.2;
+      margin: 0 0 20px;
+    }
+
+    .story-title em {
+      color: #00ff41;
+      font-style: italic;
+    }
+
+    .story-body p {
+      font-size: 15px;
+      color: #aabbaa;
+      line-height: 1.95;
+      margin: 0 0 20px;
+      font-weight: 300;
+    }
+
+    .story-body p strong {
+      color: #ddeedd;
+      font-weight: 600;
+    }
+
+    .story-body p.highlight {
+      color: #cce0cc;
+      font-size: 16px;
+      border-left: 3px solid #00ff41;
+      padding-left: 20px;
+      font-style: italic;
+    }
+
+    /* ── MISSION CARDS ── */
+    .mission-section {
+      padding: 80px 0 100px;
+      background: rgba(0,255,65,0.02);
+    }
+
+    .mission-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+      margin-top: 48px;
+    }
+
+    .mission-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 32px 28px;
+      position: relative;
+      overflow: hidden;
+      transition: transform 0.3s, border-color 0.3s;
+    }
+
+    .mission-card:hover {
+      transform: translateY(-6px);
+      border-color: rgba(0,255,65,0.3);
+    }
+
+    .mission-card::after {
+      content: '';
+      position: absolute;
+      bottom: 0; left: 0; right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, #00ff41, transparent);
+      transform: scaleX(0);
+      transition: transform 0.3s;
+    }
+
+    .mission-card:hover::after { transform: scaleX(1); }
+
+    .mission-icon {
+      font-size: 36px;
+      margin-bottom: 16px;
+      display: block;
+    }
+
+    .mission-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 10px;
+    }
+
+    .mission-text {
+      font-size: 14px;
+      color: #778877;
+      line-height: 1.7;
+    }
+
+    /* ── VALUES ── */
+    .values-section { padding: 80px 0; }
+
+    .values-list {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      margin-top: 48px;
+    }
+
+    .value-item {
+      display: flex;
+      gap: 20px;
+      align-items: flex-start;
+      padding: 24px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      transition: border-color 0.2s;
+    }
+
+    .value-item:hover { border-color: rgba(0,255,65,0.2); }
+
+    .value-num {
+      font-family: 'Courier New', monospace;
+      font-size: 28px;
+      font-weight: 700;
+      color: rgba(0,255,65,0.2);
+      line-height: 1;
+      flex-shrink: 0;
+    }
+
+    .value-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 1rem;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 6px;
+    }
+
+    .value-text {
+      font-size: 13px;
+      color: #778877;
+      line-height: 1.7;
+    }
+
+    /* ── CTA ── */
+    .about-cta {
+      padding: 100px 0;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .about-cta::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 600px;
+      height: 300px;
+      background: radial-gradient(ellipse, rgba(0,255,65,0.06), transparent 70%);
+      pointer-events: none;
+    }
+
+    .cta-title {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(2rem, 4vw, 3rem);
+      font-weight: 900;
+      color: #fff;
+      margin: 0 0 16px;
+      position: relative;
+    }
+
+    .cta-title em { color: #00ff41; font-style: italic; }
+
+    .cta-sub {
+      font-size: 16px;
+      color: #778877;
+      margin: 0 0 36px;
+      max-width: 500px;
+      margin-left: auto;
+      margin-right: auto;
+      line-height: 1.7;
+    }
+
+    .cta-buttons {
+      display: flex;
+      gap: 16px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    /* ── ANIMATIONS ── */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(30px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .fade-up { animation: fadeUp 0.7s ease forwards; }
+    .fade-up-2 { animation: fadeUp 0.7s ease 0.15s forwards; opacity: 0; }
+    .fade-up-3 { animation: fadeUp 0.7s ease 0.3s forwards; opacity: 0; }
+    .fade-up-4 { animation: fadeUp 0.7s ease 0.45s forwards; opacity: 0; }
+
+    @media (max-width: 900px) {
+      .about-hero-grid { grid-template-columns: 1fr; gap: 48px; }
+      .story-grid { grid-template-columns: 1fr; gap: 48px; }
+      .story-sticky { position: static; }
+      .mission-grid { grid-template-columns: 1fr; }
+      .values-list { grid-template-columns: 1fr; }
+      .story-section::before { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+  <nav class="navbar">
+    <div class="container">
+      <a href="index.html" class="navbar-brand">
+        <span class="shield-icon">🛡️</span>
+        CyberWatch<span class="text-cyan">Kenya</span>
+      </a>
+      <ul class="navbar-links">
+        <li><a href="index.html">Home</a></li>
+        <li><a href="index.html#alerts">Scam Alerts</a></li>
+        <li><a href="pricing.html">Pricing</a></li>
+        <li><a href="about.html" class="active">About</a></li>
+        <li><a href="subscribe.html" class="btn btn-outline btn-sm">Subscribe</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <!-- ═══ HERO ═══ -->
+  <section class="about-hero">
+    <div class="container">
+      <div class="about-hero-grid">
+
+        <div>
+          <div class="about-eyebrow fade-up">THE STORY BEHIND THE SHIELD</div>
+          <h1 class="about-headline fade-up-2">
+            One Kenyan's<br>
+            mission to make<br>
+            the internet <span>safer</span><br>
+            for all of us.
+          </h1>
+          <p class="about-lead fade-up-3">
+            CyberWatch Kenya was born from a simple, painful truth — cybercriminals are targeting Kenyans every single day, and most people never see it coming until it's too late.
+          </p>
+          <div class="fade-up-4" style="display:flex; gap:16px; flex-wrap:wrap;">
+            <a href="pricing.html" class="btn btn-primary btn-lg">🛡️ Get Protected</a>
+            <a href="index.html#alerts" class="btn btn-outline btn-lg">📡 View Scam Alerts</a>
+          </div>
+        </div>
+
+        <!-- Founder Card -->
+        <div class="founder-card fade-up-3">
+          <div class="founder-avatar">SA</div>
+          <div class="founder-name">Samuel Adikah</div>
+          <div class="founder-title">// FOUNDER & CHIEF SECURITY ANALYST</div>
+          <p class="founder-quote">
+            Every alert we publish is a scam that won't reach you. Every subscriber we protect is a family that keeps their money. That's what drives me every single day.
+          </p>
+          <div class="founder-stats">
+            <div class="founder-stat">
+              <div class="founder-stat-num" id="aboutStatAlerts">—</div>
+              <div class="founder-stat-label">Scams Exposed</div>
+            </div>
+            <div class="founder-stat">
+              <div class="founder-stat-num" id="aboutStatSubs">—</div>
+              <div class="founder-stat-label">Kenyans Protected</div>
+            </div>
+            <div class="founder-stat">
+              <div class="founder-stat-num">24/7</div>
+              <div class="founder-stat-label">Monitoring</div>
+            </div>
+            <div class="founder-stat">
+              <div class="founder-stat-num">🇰🇪</div>
+              <div class="founder-stat-label">Kenya Based</div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ STORY ═══ -->
+  <section class="story-section">
+    <div class="container">
+      <div class="story-grid">
+
+        <div class="story-sticky">
+          <div class="section-label">THE ORIGIN STORY</div>
+          <h2 class="story-title">
+            Why I built<br>
+            <em>CyberWatch Kenya</em>
+          </h2>
+          <p style="font-size:14px; color:#557755; line-height:1.8; margin:0;">
+            Samuel Adikah — Founder<br>
+            Nairobi, Kenya 🇰🇪
+          </p>
+        </div>
+
+        <div class="story-body">
+          <p>
+            <strong>Kenya is one of the most digitally connected countries in Africa.</strong> We were among the first to embrace mobile money, we have one of the highest smartphone adoption rates on the continent, and our young population lives online — banking, shopping, working, connecting.
+          </p>
+          <p class="highlight">
+            But with that connectivity came a wave of cybercrime that has cost Kenyans billions of shillings. And the worst part? Most of it was completely avoidable.
+          </p>
+          <p>
+            I started CyberWatch Kenya because I watched people around me — smart, hardworking Kenyans — lose their savings to scams they never saw coming. A fake job offer here. A phishing link there. An M-PESA "agent" who was actually a fraudster. The scams were everywhere, but the warnings were nowhere.
+          </p>
+          <p>
+            <strong>There was no single place a Kenyan could go to find out what scams were active right now.</strong> No early warning system. No community sharing real intelligence. Just people finding out after they'd already been robbed.
+          </p>
+          <p>
+            So I built one. CyberWatch Kenya monitors the digital landscape for threats targeting Kenyans — on WhatsApp, Facebook, email, phone calls, fake websites — and sends real-time alerts straight to your inbox and phone before these scams can reach you.
+          </p>
+          <p>
+            <strong>Our mission is simple:</strong> every Kenyan deserves to know what threats are out there. Every family deserves to keep their money. Every person should be able to use the internet without fear.
+          </p>
+          <p class="highlight">
+            CyberWatch Kenya is not just a newsletter. It's a community of Kenyans looking out for each other.
+          </p>
+          <p>
+            We're just getting started. But with every alert we publish, with every subscriber who shares our warnings in their WhatsApp group, with every scam we expose — we're making Kenya's internet a little bit safer.
+          </p>
+          <p>
+            <strong>Join us. Let's protect each other. 🛡️</strong>
+          </p>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ MISSION ═══ -->
+  <section class="mission-section">
+    <div class="container">
+      <div style="text-align:center; max-width:600px; margin:0 auto;">
+        <div class="section-label" style="justify-content:center;">OUR MISSION</div>
+        <h2 class="story-title" style="font-size:clamp(1.8rem,3vw,2.4rem);">
+          Three things we stand for
+        </h2>
+      </div>
+
+      <div class="mission-grid">
+        <div class="mission-card">
+          <span class="mission-icon">🎯</span>
+          <div class="mission-title">Accuracy Above All</div>
+          <p class="mission-text">Every scam alert we publish is verified before it goes out. We don't publish rumours. We publish intelligence — specific, actionable, and accurate.</p>
+        </div>
+        <div class="mission-card">
+          <span class="mission-icon">⚡</span>
+          <div class="mission-title">Speed Saves Money</div>
+          <p class="mission-text">A scam alert that arrives after you've been robbed is useless. We monitor threats 24/7 and push alerts the moment we detect a new attack targeting Kenyans.</p>
+        </div>
+        <div class="mission-card">
+          <span class="mission-icon">🤝</span>
+          <div class="mission-title">Community Protection</div>
+          <p class="mission-text">We believe in Kenyans protecting Kenyans. Every report you submit helps us warn others. Every alert you share could save someone's life savings.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ VALUES ═══ -->
+  <section class="values-section">
+    <div class="container">
+      <div class="section-label">WHAT WE BELIEVE</div>
+      <h2 class="story-title">Our values</h2>
+
+      <div class="values-list">
+        <div class="value-item">
+          <div class="value-num">01</div>
+          <div>
+            <div class="value-title">Transparency</div>
+            <p class="value-text">We tell you exactly what we know, how we know it, and what to do about it. No vague warnings. No fear-mongering. Just clear, honest intelligence.</p>
+          </div>
+        </div>
+        <div class="value-item">
+          <div class="value-num">02</div>
+          <div>
+            <div class="value-title">Accessibility</div>
+            <p class="value-text">Cybersecurity shouldn't be for the wealthy or the technically skilled. Every Kenyan deserves protection — that's why we offer a free tier that never expires.</p>
+          </div>
+        </div>
+        <div class="value-item">
+          <div class="value-num">03</div>
+          <div>
+            <div class="value-title">Privacy</div>
+            <p class="value-text">We collect only what we need. We never sell your data. We never share your information. Your trust is more valuable than any advertiser's money.</p>
+          </div>
+        </div>
+        <div class="value-item">
+          <div class="value-num">04</div>
+          <div>
+            <div class="value-title">Community First</div>
+            <p class="value-text">CyberWatch Kenya exists to serve Kenyans — not investors, not advertisers, not foreign interests. Every decision we make is guided by one question: does this protect our community?</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ CTA ═══ -->
+  <section class="about-cta">
+    <div class="container">
+      <p style="font-family:'Courier New',monospace; font-size:11px; color:#00ff41; letter-spacing:3px; margin:0 0 20px;">JOIN THE MISSION</p>
+      <h2 class="cta-title">
+        Help us protect<br>
+        <em>every Kenyan online</em>
+      </h2>
+      <p class="cta-sub">
+        Subscribe today. Share our alerts. Report scams you encounter. Together, we can make Kenya's internet safer for everyone.
+      </p>
+      <div class="cta-buttons">
+        <a href="subscribe.html" class="btn btn-primary btn-lg">🛡️ Subscribe Free</a>
+        <a href="pricing.html" class="btn btn-outline btn-lg">⭐ See Premium Plans</a>
+      </div>
+    </div>
+  </section>
+
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div>
+          <div class="footer-brand">🛡️ CyberWatch Kenya</div>
+          <p class="footer-desc">Protecting Kenyans from online scams, phishing attacks, and cyber fraud. Our mission is a safer digital Kenya.</p>
+        </div>
+        <div>
+          <div class="footer-heading">Quick Links</div>
+          <ul class="footer-links">
+            <li><a href="index.html">Home</a></li>
+            <li><a href="index.html#alerts">Scam Alerts</a></li>
+            <li><a href="pricing.html">Pricing</a></li>
+            <li><a href="about.html">About</a></li>
+            <li><a href="index.html#report">Report a Scam</a></li>
+          </ul>
+        </div>
+        <div>
+          <div class="footer-heading">Report Scams To</div>
+          <ul class="footer-links">
+            <li><a href="https://www.dci.go.ke" target="_blank">DCI Kenya</a></li>
+            <li><a href="tel:0800722020">CA Kenya: 0800 722 020</a></li>
+            <li><a href="tel:0722000100">Safaricom: 0722 000 100</a></li>
+            <li><a href="mailto:cybercrime@dci.go.ke">cybercrime@dci.go.ke</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <span class="footer-bottom-text">© 2024 CyberWatch Kenya. All rights reserved.</span>
+        <span class="footer-bottom-text">Built to protect Kenyans 🇰🇪</span>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    const API = 'https://cyberwatch-kenya.onrender.com/api';
+    async function loadAboutStats() {
+      try {
+        const [alertsRes, subsRes] = await Promise.all([
+          fetch(`${API}/newsletters`),
+          fetch(`${API}/subscribers/count`)
+        ]);
+        const alertsData = await alertsRes.json();
+        const subsData   = await subsRes.json();
+        const alerts = document.getElementById('aboutStatAlerts');
+        const subs   = document.getElementById('aboutStatSubs');
+        if (alerts) alerts.textContent = (alertsData.total || 0) + '+';
+        if (subs)   subs.textContent   = (subsData.count  || 0) + '+';
+      } catch(e) {}
+    }
+    loadAboutStats();
+  </script>
+</body>
+</html>
