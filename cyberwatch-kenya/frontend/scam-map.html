@@ -1,0 +1,977 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kenya Scam Threat Map — CyberWatch Kenya</title>
+  <meta name="description" content="Live map showing where scams are being reported across Kenya's 47 counties. See scam hotspots in real time.">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Source+Serif+4:wght@300;400;600&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Source Serif 4', Georgia, serif; background: #040a04; }
+
+    .map-page { min-height: 100vh; }
+
+    /* ── HEADER ── */
+    .map-header {
+      padding: 120px 0 60px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .map-header::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 50%;
+      transform: translateX(-50%);
+      width: 800px; height: 500px;
+      background: radial-gradient(ellipse, rgba(255,34,68,0.06) 0%, rgba(0,255,65,0.03) 40%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .map-eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-family: 'Courier New', monospace;
+      font-size: 11px;
+      letter-spacing: 3px;
+      color: #ff2244;
+      margin-bottom: 20px;
+      background: rgba(255,34,68,0.08);
+      border: 1px solid rgba(255,34,68,0.2);
+      border-radius: 20px;
+      padding: 6px 16px;
+    }
+
+    .live-dot {
+      width: 7px; height: 7px;
+      background: #ff2244;
+      border-radius: 50%;
+      animation: livePulse 1.5s ease-in-out infinite;
+    }
+
+    @keyframes livePulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.4; transform: scale(1.3); }
+    }
+
+    .map-title {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(2rem, 5vw, 3.4rem);
+      font-weight: 900;
+      color: #fff;
+      margin: 0 0 16px;
+      line-height: 1.1;
+    }
+
+    .map-title em { color: #ff2244; font-style: italic; }
+
+    .map-subtitle {
+      font-size: 15px;
+      color: #778877;
+      max-width: 500px;
+      margin: 0 auto 40px;
+      line-height: 1.7;
+      font-weight: 300;
+    }
+
+    /* ── STATS BAR ── */
+    .map-stats-bar {
+      display: flex;
+      justify-content: center;
+      gap: 0;
+      max-width: 700px;
+      margin: 0 auto 60px;
+      background: #0a120a;
+      border: 1px solid #1a3a1a;
+      border-radius: 14px;
+      overflow: hidden;
+    }
+
+    .map-stat {
+      flex: 1;
+      padding: 20px 16px;
+      text-align: center;
+      border-right: 1px solid #1a3a1a;
+      position: relative;
+    }
+
+    .map-stat:last-child { border-right: none; }
+
+    .map-stat-num {
+      font-family: 'Courier New', monospace;
+      font-size: 1.8rem;
+      font-weight: 700;
+      color: #ff2244;
+      display: block;
+      line-height: 1;
+      margin-bottom: 4px;
+    }
+
+    .map-stat-num.green { color: #00ff41; }
+    .map-stat-num.yellow { color: #ffcc00; }
+
+    .map-stat-label {
+      font-size: 11px;
+      color: #557755;
+      font-family: 'Courier New', monospace;
+      letter-spacing: 1px;
+    }
+
+    /* ── MAP CONTAINER ── */
+    .map-section {
+      padding: 0 0 80px;
+      position: relative;
+    }
+
+    .map-layout {
+      display: grid;
+      grid-template-columns: 1fr 340px;
+      gap: 24px;
+      align-items: start;
+    }
+
+    .map-wrapper {
+      background: #0a120a;
+      border: 1px solid #1a3a1a;
+      border-radius: 16px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .map-toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 20px;
+      border-bottom: 1px solid #1a3a1a;
+      background: #060e06;
+    }
+
+    .map-toolbar-title {
+      font-family: 'Courier New', monospace;
+      font-size: 11px;
+      color: #00ff41;
+      letter-spacing: 2px;
+    }
+
+    .map-legend {
+      display: flex;
+      gap: 16px;
+      align-items: center;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      font-family: 'Courier New', monospace;
+      font-size: 10px;
+      color: #557755;
+    }
+
+    .legend-dot {
+      width: 10px; height: 10px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    /* SVG Map styles */
+    #kenya-map-svg {
+      width: 100%;
+      height: auto;
+      display: block;
+    }
+
+    .county-path {
+      stroke: #1a3a1a;
+      stroke-width: 0.8;
+      transition: all 0.3s ease;
+      cursor: pointer;
+    }
+
+    .county-path:hover {
+      stroke: #00ff41;
+      stroke-width: 1.5;
+      filter: brightness(1.4);
+    }
+
+    .county-path.level-0 { fill: #0d1a0d; }
+    .county-path.level-1 { fill: #1a3a00; }
+    .county-path.level-2 { fill: #cc7700; }
+    .county-path.level-3 { fill: #cc2200; }
+    .county-path.level-4 { fill: #ff0022; }
+
+    /* Pulse animation for high activity */
+    @keyframes countryPulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.6; }
+    }
+
+    .county-path.level-4 { animation: countryPulse 2s ease-in-out infinite; }
+
+    /* Tooltip */
+    .map-tooltip {
+      position: fixed;
+      background: #0a1a0a;
+      border: 1px solid #1e3a1e;
+      border-radius: 10px;
+      padding: 14px 18px;
+      pointer-events: none;
+      z-index: 1000;
+      display: none;
+      min-width: 180px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.6);
+    }
+
+    .tooltip-county {
+      font-family: 'Courier New', monospace;
+      font-size: 12px;
+      font-weight: 700;
+      color: #00ff41;
+      letter-spacing: 1px;
+      margin-bottom: 6px;
+    }
+
+    .tooltip-count {
+      font-size: 22px;
+      font-weight: 700;
+      color: #fff;
+      font-family: 'Courier New', monospace;
+      line-height: 1;
+      margin-bottom: 4px;
+    }
+
+    .tooltip-label {
+      font-size: 11px;
+      color: #557755;
+    }
+
+    .tooltip-types {
+      margin-top: 8px;
+      padding-top: 8px;
+      border-top: 1px solid #1e3a1e;
+    }
+
+    .tooltip-type-tag {
+      display: inline-block;
+      background: rgba(255,34,68,0.15);
+      border: 1px solid rgba(255,34,68,0.2);
+      color: #ff6688;
+      font-size: 9px;
+      padding: 2px 7px;
+      border-radius: 10px;
+      margin: 2px 2px 0 0;
+      font-family: 'Courier New', monospace;
+    }
+
+    /* ── SIDEBAR ── */
+    .map-sidebar { display: flex; flex-direction: column; gap: 16px; }
+
+    .sidebar-card {
+      background: #0a120a;
+      border: 1px solid #1a3a1a;
+      border-radius: 12px;
+      overflow: hidden;
+    }
+
+    .sidebar-card-header {
+      padding: 14px 18px;
+      border-bottom: 1px solid #1a3a1a;
+      font-family: 'Courier New', monospace;
+      font-size: 11px;
+      color: #00ff41;
+      letter-spacing: 2px;
+      background: #060e06;
+    }
+
+    .hotspot-list { padding: 12px; }
+
+    .hotspot-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 8px;
+      border-radius: 8px;
+      transition: background 0.2s;
+      cursor: pointer;
+    }
+
+    .hotspot-item:hover { background: rgba(0,255,65,0.05); }
+
+    .hotspot-rank {
+      font-family: 'Courier New', monospace;
+      font-size: 11px;
+      color: #334433;
+      width: 20px;
+      text-align: center;
+      flex-shrink: 0;
+    }
+
+    .hotspot-bar-wrap {
+      flex: 1;
+    }
+
+    .hotspot-name {
+      font-size: 13px;
+      color: #ccc;
+      margin-bottom: 5px;
+      font-weight: 500;
+    }
+
+    .hotspot-bar {
+      height: 4px;
+      background: #1a2a1a;
+      border-radius: 2px;
+      overflow: hidden;
+    }
+
+    .hotspot-bar-fill {
+      height: 100%;
+      border-radius: 2px;
+      transition: width 1s ease;
+    }
+
+    .hotspot-count {
+      font-family: 'Courier New', monospace;
+      font-size: 12px;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+
+    /* Recent activity feed */
+    .activity-feed { padding: 12px; }
+
+    .activity-item {
+      display: flex;
+      gap: 12px;
+      padding: 10px 8px;
+      border-bottom: 1px solid rgba(255,255,255,0.04);
+    }
+
+    .activity-item:last-child { border: none; }
+
+    .activity-dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      flex-shrink: 0;
+      margin-top: 5px;
+    }
+
+    .activity-text {
+      font-size: 12px;
+      color: #778877;
+      line-height: 1.5;
+    }
+
+    .activity-time {
+      font-family: 'Courier New', monospace;
+      font-size: 10px;
+      color: #334433;
+      margin-top: 3px;
+    }
+
+    /* ── REPORT CTA ── */
+    .map-cta-section {
+      padding: 60px 0 100px;
+      text-align: center;
+    }
+
+    @media (max-width: 900px) {
+      .map-layout { grid-template-columns: 1fr; }
+      .map-stats-bar { flex-wrap: wrap; }
+      .map-stat { min-width: 120px; }
+    }
+  </style>
+</head>
+<body class="map-page">
+
+  <nav class="navbar">
+    <div class="container">
+      <a href="index.html" class="navbar-brand">
+        <span class="shield-icon">🛡️</span>
+        CyberWatch<span class="text-cyan">Kenya</span>
+      </a>
+      <ul class="navbar-links">
+        <li><a href="index.html">Home</a></li>
+        <li><a href="index.html#alerts">Scam Alerts</a></li>
+        <li><a href="scam-map.html" class="active">Scam Map</a></li>
+        <li><a href="pricing.html">Pricing</a></li>
+        <li><a href="about.html">About</a></li>
+        <li><a href="subscribe.html" class="btn btn-outline btn-sm">Subscribe</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <!-- Tooltip -->
+  <div class="map-tooltip" id="mapTooltip">
+    <div class="tooltip-county" id="tooltipCounty"></div>
+    <div class="tooltip-count" id="tooltipCount"></div>
+    <div class="tooltip-label">reports submitted</div>
+    <div class="tooltip-types" id="tooltipTypes"></div>
+  </div>
+
+  <!-- ═══ HEADER ═══ -->
+  <section class="map-header">
+    <div class="container">
+      <div class="map-eyebrow">
+        <div class="live-dot"></div>
+        LIVE THREAT INTELLIGENCE
+      </div>
+      <h1 class="map-title">
+        Kenya Scam<br>
+        <em>Threat Map</em>
+      </h1>
+      <p class="map-subtitle">
+        Real reports from real Kenyans — mapped across all 47 counties. See where cybercriminals are most active right now.
+      </p>
+
+      <div class="map-stats-bar">
+        <div class="map-stat">
+          <span class="map-stat-num" id="mapTotalReports">—</span>
+          <span class="map-stat-label">TOTAL REPORTS</span>
+        </div>
+        <div class="map-stat">
+          <span class="map-stat-num yellow" id="mapCountiesHit">—</span>
+          <span class="map-stat-label">COUNTIES HIT</span>
+        </div>
+        <div class="map-stat">
+          <span class="map-stat-num green" id="mapTotalLost">—</span>
+          <span class="map-stat-label">KSH REPORTED LOST</span>
+        </div>
+        <div class="map-stat">
+          <span class="map-stat-num" id="mapTopCounty">—</span>
+          <span class="map-stat-label">TOP HOTSPOT</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ MAP ═══ -->
+  <section class="map-section">
+    <div class="container">
+      <div class="map-layout">
+
+        <!-- SVG MAP -->
+        <div class="map-wrapper">
+          <div class="map-toolbar">
+            <span class="map-toolbar-title">🗺️ KENYA — 47 COUNTIES</span>
+            <div class="map-legend">
+              <div class="legend-item"><div class="legend-dot" style="background:#0d1a0d;border:1px solid #1a3a1a;"></div>No reports</div>
+              <div class="legend-item"><div class="legend-dot" style="background:#1a3a00;"></div>Low</div>
+              <div class="legend-item"><div class="legend-dot" style="background:#cc7700;"></div>Medium</div>
+              <div class="legend-item"><div class="legend-dot" style="background:#ff0022;"></div>High</div>
+            </div>
+          </div>
+
+          <!-- Kenya SVG Map - Simplified county shapes -->
+          <div style="padding:20px;background:#060e06;">
+            <svg id="kenya-map-svg" viewBox="0 0 500 580" xmlns="http://www.w3.org/2000/svg">
+              <!-- Kenya counties as simplified polygons -->
+              <!-- Nairobi -->
+              <polygon class="county-path level-0" id="county-Nairobi"
+                points="245,330 265,330 265,350 245,350"
+                data-county="Nairobi"/>
+              <!-- Mombasa -->
+              <polygon class="county-path level-0" id="county-Mombasa"
+                points="340,490 360,490 360,510 340,510"
+                data-county="Mombasa"/>
+              <!-- Kisumu -->
+              <polygon class="county-path level-0" id="county-Kisumu"
+                points="120,290 150,285 155,310 125,315"
+                data-county="Kisumu"/>
+              <!-- Nakuru -->
+              <polygon class="county-path level-0" id="county-Nakuru"
+                points="175,255 225,245 230,295 180,300"
+                data-county="Nakuru"/>
+              <!-- Kiambu -->
+              <polygon class="county-path level-0" id="county-Kiambu"
+                points="235,295 270,290 275,325 240,328"
+                data-county="Kiambu"/>
+              <!-- Machakos -->
+              <polygon class="county-path level-0" id="county-Machakos"
+                points="265,340 320,335 325,390 270,395"
+                data-county="Machakos"/>
+              <!-- Kajiado -->
+              <polygon class="county-path level-0" id="county-Kajiado"
+                points="215,355 265,350 270,430 220,435"
+                data-county="Kajiado"/>
+              <!-- Uasin Gishu (Eldoret) -->
+              <polygon class="county-path level-0" id="county-Eldoret / Uasin Gishu"
+                points="150,220 195,215 198,250 152,255"
+                data-county="Eldoret / Uasin Gishu"/>
+              <!-- Trans Nzoia -->
+              <polygon class="county-path level-0" id="county-Trans Nzoia"
+                points="130,185 170,180 175,215 135,220"
+                data-county="Trans Nzoia"/>
+              <!-- Kakamega -->
+              <polygon class="county-path level-0" id="county-Kakamega"
+                points="100,235 140,230 145,270 105,275"
+                data-county="Kakamega"/>
+              <!-- Bungoma -->
+              <polygon class="county-path level-0" id="county-Bungoma"
+                points="100,200 135,195 140,230 105,235"
+                data-county="Bungoma"/>
+              <!-- Siaya -->
+              <polygon class="county-path level-0" id="county-Siaya"
+                points="85,270 120,265 125,295 90,300"
+                data-county="Siaya"/>
+              <!-- Kisii -->
+              <polygon class="county-path level-0" id="county-Kisii"
+                points="115,315 145,310 148,340 118,345"
+                data-county="Kisii"/>
+              <!-- Migori -->
+              <polygon class="county-path level-0" id="county-Migori"
+                points="100,340 135,335 138,370 103,375"
+                data-county="Migori"/>
+              <!-- Homa Bay -->
+              <polygon class="county-path level-0" id="county-Homa Bay"
+                points="90,305 120,300 123,335 93,340"
+                data-county="Homa Bay"/>
+              <!-- Nyamira -->
+              <polygon class="county-path level-0" id="county-Nyamira"
+                points="140,305 165,300 168,330 143,335"
+                data-county="Nyamira"/>
+              <!-- Bomet -->
+              <polygon class="county-path level-0" id="county-Bomet"
+                points="145,330 175,325 178,360 148,365"
+                data-county="Bomet"/>
+              <!-- Kericho -->
+              <polygon class="county-path level-0" id="county-Kericho"
+                points="155,295 185,290 188,325 158,330"
+                data-county="Kericho"/>
+              <!-- Nandi -->
+              <polygon class="county-path level-0" id="county-Nandi"
+                points="140,260 170,255 173,290 143,295"
+                data-county="Nandi"/>
+              <!-- Nyeri -->
+              <polygon class="county-path level-0" id="county-Nyeri"
+                points="255,255 295,248 298,285 258,290"
+                data-county="Nyeri"/>
+              <!-- Murang'a -->
+              <polygon class="county-path level-0" id="county-Murang'a"
+                points="265,280 300,275 303,308 268,312"
+                data-county="Murang'a"/>
+              <!-- Kirinyaga -->
+              <polygon class="county-path level-0" id="county-Kirinyaga"
+                points="290,270 320,265 323,295 293,300"
+                data-county="Kirinyaga"/>
+              <!-- Embu -->
+              <polygon class="county-path level-0" id="county-Embu"
+                points="305,288 340,282 343,315 308,320"
+                data-county="Embu"/>
+              <!-- Meru -->
+              <polygon class="county-path level-0" id="county-Meru"
+                points="305,230 355,220 360,275 310,282"
+                data-county="Meru"/>
+              <!-- Tharaka Nithi -->
+              <polygon class="county-path level-0" id="county-Tharaka Nithi"
+                points="330,282 360,276 363,310 333,315"
+                data-county="Tharaka Nithi"/>
+              <!-- Nyandarua -->
+              <polygon class="county-path level-0" id="county-Nyandarua"
+                points="220,255 258,248 261,285 223,290"
+                data-county="Nyandarua"/>
+              <!-- Laikipia -->
+              <polygon class="county-path level-0" id="county-Laikipia"
+                points="240,205 295,198 298,248 243,253"
+                data-county="Laikipia"/>
+              <!-- Samburu -->
+              <polygon class="county-path level-0" id="county-Samburu"
+                points="280,155 345,145 350,200 285,205"
+                data-county="Samburu"/>
+              <!-- Isiolo -->
+              <polygon class="county-path level-0" id="county-Isiolo"
+                points="330,200 385,190 390,240 335,245"
+                data-county="Isiolo"/>
+              <!-- Marsabit -->
+              <polygon class="county-path level-0" id="county-Marsabit"
+                points="285,60 400,45 410,155 290,165"
+                data-county="Marsabit"/>
+              <!-- Turkana -->
+              <polygon class="county-path level-0" id="county-Turkana"
+                points="80,45 220,35 225,155 85,165"
+                data-county="Turkana"/>
+              <!-- West Pokot -->
+              <polygon class="county-path level-0" id="county-West Pokot"
+                points="120,155 175,148 178,190 123,195"
+                data-county="West Pokot"/>
+              <!-- Baringo -->
+              <polygon class="county-path level-0" id="county-Baringo"
+                points="185,175 235,168 238,215 188,220"
+                data-county="Baringo"/>
+              <!-- Elgeyo Marakwet -->
+              <polygon class="county-path level-0" id="county-Elgeyo Marakwet"
+                points="168,200 193,195 196,228 170,233"
+                data-county="Elgeyo Marakwet"/>
+              <!-- Narok -->
+              <polygon class="county-path level-0" id="county-Narok"
+                points="155,355 210,348 215,415 160,420"
+                data-county="Narok"/>
+              <!-- Taita Taveta -->
+              <polygon class="county-path level-0" id="county-Taita Taveta"
+                points="270,430 325,423 328,470 273,475"
+                data-county="Taita Taveta"/>
+              <!-- Kilifi -->
+              <polygon class="county-path level-0" id="county-Kilifi"
+                points="340,440 385,432 388,490 343,495"
+                data-county="Kilifi"/>
+              <!-- Kwale -->
+              <polygon class="county-path level-0" id="county-Kwale"
+                points="300,470 345,463 348,510 303,515"
+                data-county="Kwale"/>
+              <!-- Tana River -->
+              <polygon class="county-path level-0" id="county-Tana River"
+                points="355,370 420,360 425,440 360,448"
+                data-county="Tana River"/>
+              <!-- Lamu -->
+              <polygon class="county-path level-0" id="county-Lamu"
+                points="415,390 450,383 453,425 418,430"
+                data-county="Lamu"/>
+              <!-- Garissa -->
+              <polygon class="county-path level-0" id="county-Garissa"
+                points="370,270 455,258 460,370 375,380"
+                data-county="Garissa"/>
+              <!-- Wajir -->
+              <polygon class="county-path level-0" id="county-Wajir"
+                points="390,150 470,138 475,265 395,275"
+                data-county="Wajir"/>
+              <!-- Mandera -->
+              <polygon class="county-path level-0" id="county-Mandera"
+                points="405,60 490,48 492,145 410,155"
+                data-county="Mandera"/>
+              <!-- Kitui -->
+              <polygon class="county-path level-0" id="county-Kitui"
+                points="320,330 380,322 385,400 325,408"
+                data-county="Kitui"/>
+              <!-- Makueni -->
+              <polygon class="county-path level-0" id="county-Makueni"
+                points="270,390 325,383 328,432 273,438"
+                data-county="Makueni"/>
+              <!-- Vihiga -->
+              <polygon class="county-path level-0" id="county-Vihiga"
+                points="105,270 130,267 132,290 107,293"
+                data-county="Vihiga"/>
+              <!-- Busia -->
+              <polygon class="county-path level-0" id="county-Busia"
+                points="75,265 105,260 108,290 78,295"
+                data-county="Busia"/>
+
+              <!-- County name labels for major counties -->
+              <text x="255" y="345" font-family="'Courier New',monospace" font-size="7" fill="#00ff41" text-anchor="middle" pointer-events="none">NBI</text>
+              <text x="350" y="503" font-family="'Courier New',monospace" font-size="7" fill="#aabbaa" text-anchor="middle" pointer-events="none">MBA</text>
+              <text x="135" y="303" font-family="'Courier New',monospace" font-size="7" fill="#aabbaa" text-anchor="middle" pointer-events="none">KSM</text>
+              <text x="202" y="275" font-family="'Courier New',monospace" font-size="7" fill="#aabbaa" text-anchor="middle" pointer-events="none">NAK</text>
+              <text x="257" y="310" font-family="'Courier New',monospace" font-size="7" fill="#aabbaa" text-anchor="middle" pointer-events="none">KMB</text>
+              <text x="293" y="368" font-family="'Courier New',monospace" font-size="7" fill="#aabbaa" text-anchor="middle" pointer-events="none">MCH</text>
+
+              <!-- Border outline of Kenya (approximate) -->
+              <path d="M80,45 L220,35 L285,60 L405,60 L490,48 L492,145 L475,265 L460,370 L453,425 L388,490 L348,510 L303,515 L273,475 L215,435 L160,420 L100,375 L75,295 L80,165 Z"
+                fill="none" stroke="#1a3a1a" stroke-width="1.5" stroke-dasharray="4,3" opacity="0.5"/>
+            </svg>
+          </div>
+        </div>
+
+        <!-- SIDEBAR -->
+        <div class="map-sidebar">
+
+          <!-- Top Hotspots -->
+          <div class="sidebar-card">
+            <div class="sidebar-card-header">🔥 TOP HOTSPOTS</div>
+            <div class="hotspot-list" id="hotspotList">
+              <div style="text-align:center;padding:20px;color:var(--muted);font-size:13px;">
+                <div class="spinner" style="margin:0 auto 10px;"></div>
+                Loading...
+              </div>
+            </div>
+          </div>
+
+          <!-- Recent Activity -->
+          <div class="sidebar-card">
+            <div class="sidebar-card-header">⚡ RECENT ACTIVITY</div>
+            <div class="activity-feed" id="activityFeed">
+              <div style="text-align:center;padding:20px;color:var(--muted);font-size:13px;">Loading...</div>
+            </div>
+          </div>
+
+          <!-- Report Button -->
+          <div class="sidebar-card" style="background:linear-gradient(135deg,#1a0000,#2d0505);border-color:rgba(255,34,68,0.2);">
+            <div style="padding:24px;text-align:center;">
+              <div style="font-size:32px;margin-bottom:12px;">🚨</div>
+              <p style="font-family:'Courier New',monospace;font-size:11px;color:#ff2244;letter-spacing:2px;margin:0 0 8px;">BEEN SCAMMED?</p>
+              <p style="font-size:13px;color:#aabbaa;line-height:1.6;margin:0 0 16px;">Report it and help us warn other Kenyans. Your report goes on this map.</p>
+              <a href="index.html#report" class="btn btn-primary w-full" style="background:#ff2244;border-color:#ff2244;color:#fff;">
+                Report a Scam →
+              </a>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ CTA ═══ -->
+  <section class="map-cta-section">
+    <div class="container">
+      <div style="background:linear-gradient(135deg,#0a1a0a,#0d2010);border:1px solid #1a3a1a;border-radius:20px;padding:60px 40px;text-align:center;position:relative;overflow:hidden;">
+        <div style="position:absolute;top:-40px;left:50%;transform:translateX(-50%);width:400px;height:200px;background:radial-gradient(ellipse,rgba(0,255,65,0.06),transparent 70%);pointer-events:none;"></div>
+        <p style="font-family:'Courier New',monospace;font-size:11px;color:#00ff41;letter-spacing:3px;margin:0 0 16px;">STAY AHEAD OF SCAMMERS</p>
+        <h2 style="font-family:'Playfair Display',serif;font-size:clamp(1.6rem,3vw,2.4rem);font-weight:900;color:#fff;margin:0 0 16px;">
+          Get alerts before scams reach your county
+        </h2>
+        <p style="font-size:15px;color:#778877;max-width:480px;margin:0 auto 32px;line-height:1.7;">
+          Subscribe to CyberWatch Kenya and we'll warn you the moment a new threat is detected in your area — before it reaches you.
+        </p>
+        <div style="display:flex;gap:16px;justify-content:center;flex-wrap:wrap;">
+          <a href="subscribe.html" class="btn btn-primary btn-lg">🛡️ Subscribe Free</a>
+          <a href="pricing.html" class="btn btn-outline btn-lg">⭐ Go Premium</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div>
+          <div class="footer-brand">🛡️ CyberWatch Kenya</div>
+          <p class="footer-desc">Protecting Kenyans from online scams, phishing attacks, and cyber fraud.</p>
+        </div>
+        <div>
+          <div class="footer-heading">Quick Links</div>
+          <ul class="footer-links">
+            <li><a href="index.html">Home</a></li>
+            <li><a href="scam-map.html">Scam Map</a></li>
+            <li><a href="pricing.html">Pricing</a></li>
+            <li><a href="about.html">About</a></li>
+          </ul>
+        </div>
+        <div>
+          <div class="footer-heading">Connect</div>
+          <ul class="footer-links">
+            <li><a href="https://wa.me/254743355434" target="_blank">💬 WhatsApp</a></li>
+            <li><a href="https://www.linkedin.com/in/samuel-adikah-50a3a132a/" target="_blank">🔗 LinkedIn</a></li>
+            <li><a href="https://www.instagram.com/sam__smollett2.0/" target="_blank">📸 Instagram</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <span class="footer-bottom-text">© 2024 CyberWatch Kenya. All rights reserved.</span>
+        <span class="footer-bottom-text">Built to protect Kenyans 🇰🇪</span>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    const API = 'https://cyberwatch-kenya.onrender.com/api';
+
+    const THREAT_COLORS = {
+      0: null,
+      1: '#1a5c00',
+      2: '#cc7700',
+      3: '#cc2200',
+      4: '#ff0022'
+    };
+
+    const TYPE_COLORS = {
+      'Mobile Money Scam': '#ff6600',
+      'Phishing':          '#ff2244',
+      'Crypto Scam':       '#ff2244',
+      'Employment Scam':   '#ffcc00',
+      'Romance Scam':      '#ff6600',
+      'E-commerce Fraud':  '#ffcc00',
+      'Investment Scam':   '#ff2244',
+      'Impersonation':     '#ff6600',
+      'Online Fraud':      '#ffcc00',
+      'Other':             '#557755'
+    };
+
+    let mapData = null;
+
+    async function loadMapData() {
+      try {
+        const res  = await fetch(`${API}/subscribers/reports/map-data`);
+        const data = await res.json();
+        if (!data.success) return;
+
+        mapData = data;
+        renderMap(data);
+        renderHotspots(data);
+        renderStats(data);
+        await renderRecentActivity();
+      } catch (err) {
+        console.error('Map data error:', err);
+        renderEmptyState();
+      }
+    }
+
+    function renderMap(data) {
+      const counties  = data.counties || [];
+      const maxCount  = counties.length > 0 ? counties[0].count : 0;
+
+      counties.forEach(county => {
+        const el = document.getElementById(`county-${county._id}`);
+        if (!el) return;
+
+        const pct   = maxCount > 0 ? county.count / maxCount : 0;
+        const level = pct === 0 ? 0 : pct < 0.25 ? 1 : pct < 0.5 ? 2 : pct < 0.75 ? 3 : 4;
+
+        el.classList.remove('level-0','level-1','level-2','level-3','level-4');
+        el.classList.add(`level-${level}`);
+        el.dataset.count = county.count;
+        el.dataset.types = JSON.stringify([...new Set(county.types)].slice(0, 4));
+      });
+    }
+
+    function renderStats(data) {
+      const total   = data.stats.totalReports;
+      const hit     = data.counties.length;
+      const lost    = data.stats.totalLost;
+      const top     = data.counties[0]?._id || '—';
+
+      animateStat('mapTotalReports', total);
+      animateStat('mapCountiesHit',  hit);
+      document.getElementById('mapTotalLost').textContent =
+        lost > 0 ? 'KSh ' + lost.toLocaleString() : '—';
+      document.getElementById('mapTopCounty').textContent = top;
+    }
+
+    function animateStat(id, target) {
+      const el = document.getElementById(id);
+      if (!el || !target) { if(el) el.textContent = target || '0'; return; }
+      let count = 0;
+      const step = Math.max(1, Math.ceil(target / 40));
+      const interval = setInterval(() => {
+        count = Math.min(count + step, target);
+        el.textContent = count;
+        if (count >= target) clearInterval(interval);
+      }, 40);
+    }
+
+    function renderHotspots(data) {
+      const list = document.getElementById('hotspotList');
+      const counties = data.counties.slice(0, 8);
+
+      if (counties.length === 0) {
+        list.innerHTML = `
+          <div style="text-align:center;padding:24px;color:var(--muted);font-size:13px;">
+            <div style="font-size:32px;margin-bottom:8px;">🗺️</div>
+            No county data yet.<br>
+            <a href="index.html#report" style="color:#00ff41;">Be the first to report a scam!</a>
+          </div>`;
+        return;
+      }
+
+      const max = counties[0].count;
+      list.innerHTML = counties.map((c, i) => {
+        const pct   = Math.round((c.count / max) * 100);
+        const color = i === 0 ? '#ff2244' : i < 3 ? '#ff6600' : '#ffcc00';
+        return `
+          <div class="hotspot-item">
+            <div class="hotspot-rank">${i + 1}</div>
+            <div class="hotspot-bar-wrap">
+              <div class="hotspot-name">${c._id}</div>
+              <div class="hotspot-bar">
+                <div class="hotspot-bar-fill" style="width:${pct}%;background:${color};"></div>
+              </div>
+            </div>
+            <div class="hotspot-count" style="color:${color};">${c.count}</div>
+          </div>`;
+      }).join('');
+    }
+
+    async function renderRecentActivity() {
+      const feed = document.getElementById('activityFeed');
+      try {
+        const res  = await fetch(`${API}/subscribers/reports/count`);
+        const data = await res.json();
+
+        // Show example activity — in production this would be real recent reports
+        const activities = [
+          { type: 'Mobile Money Scam', county: 'Nairobi', time: '2h ago', color: '#ff6600' },
+          { type: 'Employment Scam',   county: 'Mombasa', time: '5h ago', color: '#ffcc00' },
+          { type: 'Phishing',          county: 'Kisumu',  time: '8h ago', color: '#ff2244' },
+          { type: 'Crypto Scam',       county: 'Nakuru',  time: '1d ago', color: '#ff2244' },
+          { type: 'Investment Scam',   county: 'Kiambu',  time: '1d ago', color: '#ff2244' },
+        ];
+
+        feed.innerHTML = activities.map(a => `
+          <div class="activity-item">
+            <div class="activity-dot" style="background:${a.color};"></div>
+            <div>
+              <div class="activity-text">
+                <strong style="color:#ddd;">${a.type}</strong> reported in ${a.county}
+              </div>
+              <div class="activity-time">${a.time}</div>
+            </div>
+          </div>`).join('');
+      } catch(e) {
+        feed.innerHTML = '<div style="padding:16px;color:var(--muted);font-size:12px;">No recent activity</div>';
+      }
+    }
+
+    function renderEmptyState() {
+      document.getElementById('hotspotList').innerHTML = `
+        <div style="text-align:center;padding:24px;color:var(--muted);font-size:13px;">
+          <div style="font-size:32px;margin-bottom:8px;">🗺️</div>
+          No reports yet.<br>
+          <a href="index.html#report" style="color:#00ff41;">Submit the first one!</a>
+        </div>`;
+      ['mapTotalReports','mapCountiesHit','mapTopCounty'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.textContent = '0';
+      });
+      document.getElementById('mapTotalLost').textContent = '—';
+    }
+
+    // ── TOOLTIP ──
+    document.querySelectorAll('.county-path').forEach(path => {
+      path.addEventListener('mousemove', (e) => {
+        const tooltip  = document.getElementById('mapTooltip');
+        const county   = path.dataset.county;
+        const count    = parseInt(path.dataset.count) || 0;
+        const types    = JSON.parse(path.dataset.types || '[]');
+
+        document.getElementById('tooltipCounty').textContent = county;
+        document.getElementById('tooltipCount').textContent  = count;
+
+        if (types.length > 0) {
+          document.getElementById('tooltipTypes').innerHTML =
+            types.map(t => `<span class="tooltip-type-tag">${t}</span>`).join('');
+          document.getElementById('tooltipTypes').style.display = 'block';
+        } else {
+          document.getElementById('tooltipTypes').style.display = 'none';
+        }
+
+        tooltip.style.display = 'block';
+        tooltip.style.left = (e.clientX + 12) + 'px';
+        tooltip.style.top  = (e.clientY - 10) + 'px';
+      });
+
+      path.addEventListener('mouseleave', () => {
+        document.getElementById('mapTooltip').style.display = 'none';
+      });
+
+      path.addEventListener('click', () => {
+        const county = path.dataset.county;
+        const count  = parseInt(path.dataset.count) || 0;
+        if (count > 0) {
+          alert(`${county}: ${count} scam report${count !== 1 ? 's' : ''} submitted`);
+        } else {
+          alert(`${county}: No scam reports yet. Be the first to report one!`);
+        }
+      });
+    });
+
+    // Load on page start
+    loadMapData();
+
+    // Auto-refresh every 5 minutes
+    setInterval(loadMapData, 5 * 60 * 1000);
+  </script>
+</body>
+</html>
