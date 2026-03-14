@@ -167,6 +167,38 @@
           </select>
         </div>
         <div class="form-group">
+          <label class="form-label">Featured Image <span style="color:var(--muted);font-weight:400;">(optional — appears at top of email)</span></label>
+
+          <!-- Upload area -->
+          <div id="imageUploadArea" onclick="document.getElementById('imageFileInput').click()"
+            style="border:2px dashed var(--border);border-radius:var(--radius);padding:28px;text-align:center;cursor:pointer;transition:all 0.2s;background:var(--surface);"
+            ondragover="event.preventDefault();this.style.borderColor='var(--green)'"
+            ondragleave="this.style.borderColor=''"
+            ondrop="handleImageDrop(event)">
+            <div id="imageUploadPlaceholder">
+              <div style="font-size:36px;margin-bottom:8px;">🖼️</div>
+              <div style="font-size:14px;color:#fff;font-weight:600;margin-bottom:4px;">Click or drag to upload image</div>
+              <div style="font-size:12px;color:var(--muted);">JPG, PNG, WebP — max 5MB — ideal size 1200×600px</div>
+            </div>
+            <div id="imagePreviewWrap" class="hidden">
+              <img id="imagePreview" src="" alt="Preview"
+                style="max-width:100%;max-height:200px;border-radius:6px;object-fit:cover;border:1px solid var(--border);">
+              <div style="margin-top:10px;display:flex;justify-content:center;gap:10px;">
+                <span id="imageFileName" style="font-size:12px;color:var(--muted);font-family:var(--font-mono);"></span>
+                <button type="button" onclick="event.stopPropagation();removeImage()" style="background:none;border:none;color:var(--red);cursor:pointer;font-size:12px;">✕ Remove</button>
+              </div>
+            </div>
+            <div id="imageUploadSpinner" class="hidden" style="padding:12px 0;">
+              <div class="spinner" style="margin:0 auto 8px;"></div>
+              <div style="font-size:12px;color:var(--muted);">Uploading...</div>
+            </div>
+          </div>
+          <input type="file" id="imageFileInput" accept="image/*" style="display:none" onchange="handleImageSelect(this)">
+          <input type="hidden" id="postImageUrl" value="">
+          <input type="hidden" id="postImagePublicId" value="">
+        </div>
+
+        <div class="form-group">
           <label class="form-label">Content *</label>
           <textarea class="form-control" id="postContent" rows="12"
             placeholder="Describe the scam in detail. Include red flags, how it works, and how people can protect themselves."></textarea>
