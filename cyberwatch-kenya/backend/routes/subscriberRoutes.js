@@ -30,6 +30,7 @@ router.post('/subscribe', [
       // Was unsubscribed — check if they had a valid premium subscription
       existing.active = true;
       existing.name = name;
+      if (req.body.phone) existing.phone = req.body.phone;
 
       if (existing.plan === 'premium') {
         // Check if their paid subscription is still valid
@@ -53,7 +54,8 @@ router.post('/subscribe', [
     }
 
     // Brand new subscriber
-    const subscriber = await Subscriber.create({ name, email, plan: 'free' });
+    const phone = req.body.phone || null;
+    const subscriber = await Subscriber.create({ name, email, plan: 'free', phone });
     sendFreeWelcomeEmail(subscriber).catch(e => console.error('Welcome email error:', e.message));
     res.status(201).json({ success: true, message: '✅ Successfully subscribed!' });
   } catch (error) {
