@@ -20,7 +20,18 @@ const subscriberSchema = new mongoose.Schema({
     type: Boolean,
     default: true
   },
-  // FREE = free subscriber, PREMIUM = paid KSh 30/month
+  // Kenyan phone number for SMS alerts (premium only)
+  phone: {
+    type: String,
+    trim: true,
+    default: null
+  },
+  // Whether they want SMS alerts (premium only)
+  smsEnabled: {
+    type: Boolean,
+    default: true
+  },
+  // FREE = free subscriber, PREMIUM = paid KSh 99/month
   plan: {
     type: String,
     enum: ['free', 'premium'],
