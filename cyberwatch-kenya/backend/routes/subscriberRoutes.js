@@ -86,9 +86,46 @@ router.post('/report-scam', [
     const errors = validationResult(req);
     if (!errors.isEmpty()) return res.status(400).json({ success: false, errors: errors.array() });
 
-    const { reporterName, reporterEmail, scamType, description, amountLost, platform } = req.body;
-    await ScamReport.create({ reporterName, reporterEmail, scamType, description, amountLost, platform });
+    const { reporterName, reporterEmail, scamType, description, amountLost, platform, county } = req.body;
+    await ScamReport.create({ reporterName, reporterEmail, scamType, description, amountLost, platform, county: county || null });
     res.status(201).json({ success: true, message: '✅ Thank you for your report! Our team will review it shortly.' });
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
+// ── PUBLIC: GET MAP DATA ────────────────────────
+router.get('/reports/map-data', async (req, res) => {
+  try {
+    // Get all reports grouped by county
+    const countyData = await ScamReport.aggregate([
+      { $match: { county: { $nin: [null, ''] } } },
+      { $group: {
+        _id: '$county',
+        count: { $sum: 1 },
+        totalLost: { $sum: '$amountLost' },
+        types: { $push: '$scamType' },
+        latest: { $max: '$createdAt' }
+      }},
+      { $sort: { count: -1 } }
+    ]);
+
+    // Overall stats
+    const totalReports = await ScamReport.countDocuments();
+    const totalWithCounty = await ScamReport.countDocuments({ county: { $nin: [null, ''] } });
+    const totalLost = await ScamReport.aggregate([
+      { $group: { _id: null, total: { $sum: '$amountLost' } } }
+    ]);
+
+    res.json({
+      success: true,
+      counties: countyData,
+      stats: {
+        totalReports,
+        totalWithCounty,
+        totalLost: totalLost[0]?.total || 0
+      }
+    });
   } catch (error) {
     res.status(500).json({ success: false, message: 'Server error' });
   }
