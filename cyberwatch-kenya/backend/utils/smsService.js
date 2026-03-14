@@ -72,17 +72,24 @@ async function sendAlertSMS(newsletter) {
     console.log(`📱 Sending SMS to ${recipients.length} premium subscribers...`);
 
     // Africa's Talking supports bulk SMS — send all at once
-    const result = await sms.send({
+    // Note: Remove 'from' to use default shortcode (no approval needed)
+    const sendOptions = {
       to:      recipients,
       message: message,
-      from:    'CyberWatch' // Sender ID (max 11 chars, must be approved by AT)
-    });
+    };
+    // Only use sender ID if explicitly set (requires AT approval)
+    if (process.env.AT_SENDER_ID) {
+      sendOptions.from = process.env.AT_SENDER_ID;
+    }
+
+    const result = await sms.send(sendOptions);
 
     const responses = result.SMSMessageData?.Recipients || [];
     const sent      = responses.filter(r => r.status === 'Success').length;
     const failed    = responses.filter(r => r.status !== 'Success').length;
 
     console.log(`📱 SMS done — ${sent} sent, ${failed} failed`);
+    console.log('📱 Full AT response:', JSON.stringify(responses, null, 2));
     return { sent, failed };
 
   } catch (error) {
@@ -105,11 +112,9 @@ async function sendWelcomeSMS(phone, name) {
       `You will now receive instant SMS scam alerts before fraudsters can reach you.\n\n` +
       `Stay safe! — CyberWatch Kenya Team`;
 
-    await sms.send({
-      to:      [formatted],
-      message: message,
-      from:    'CyberWatch'
-    });
+    const welcomeOptions = { to: [formatted], message };
+    if (process.env.AT_SENDER_ID) welcomeOptions.from = process.env.AT_SENDER_ID;
+    await sms.send(welcomeOptions);
 
     console.log(`📱 Welcome SMS sent to ${formatted}`);
   } catch (error) {
