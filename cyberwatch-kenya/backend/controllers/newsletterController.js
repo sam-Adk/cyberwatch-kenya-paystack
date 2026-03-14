@@ -100,7 +100,7 @@ exports.createNewsletter = async (req, res) => {
       return res.status(400).json({ success: false, errors: errors.array() });
     }
 
-    const { title, description, category, author, published, tags, audience } = req.body;
+    const { title, description, category, author, published, tags, audience, imageUrl, imagePublicId } = req.body;
 
     const newsletter = await Newsletter.create({
       title,
@@ -109,7 +109,9 @@ exports.createNewsletter = async (req, res) => {
       author: author || req.user.name,
       published: published || false,
       tags: tags || [],
-      audience: audience || 'all'
+      audience: audience || 'all',
+      imageUrl: imageUrl || null,
+      imagePublicId: imagePublicId || null
     });
 
     res.status(201).json({ success: true, data: newsletter });
@@ -358,6 +360,15 @@ function generateEmailHTML(newsletter) {
           </td>
         </tr>
       </table>
+
+      <!-- Featured Image (if exists) -->
+      ${newsletter.imageUrl ? `
+      <div style="margin-bottom:24px;border-radius:8px;overflow:hidden;border:1px solid ${cat.border};">
+        <img src="${newsletter.imageUrl}" alt="${escapeHtml(newsletter.title)}"
+          width="520"
+          style="width:100%;max-width:520px;height:auto;display:block;border-radius:8px;"
+        />
+      </div>` : ''}
 
       <!-- Title -->
       <h1 style="margin:0 0 16px;font-size:clamp(20px,4vw,26px);font-weight:700;color:#ffffff;line-height:1.35;font-family:Georgia,'Times New Roman',serif;letter-spacing:-0.3px;">
