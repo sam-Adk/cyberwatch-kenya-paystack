@@ -48,11 +48,12 @@ document.addEventListener('DOMContentLoaded', () => {
 // ─────────────────────────────────────────────
 
 async function authFetch(url, options = {}) {
+  const isFormData = options.body instanceof FormData;
   const res = await fetch(url, {
     ...options,
     headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${token}`, // JWT token in header
+      ...(isFormData ? {} : { 'Content-Type': 'application/json' }),
+      'Authorization': `Bearer ${token}`,
       ...(options.headers || {})
     }
   });
@@ -93,6 +94,7 @@ function selectAudience(value) {
 // Set default highlight on page load
 document.addEventListener('DOMContentLoaded', () => {
   selectAudience('all');
+  removeImage();
 });
 
 function showTab(name, linkEl) {
@@ -228,7 +230,9 @@ async function savePost() {
   if (!description) { alertBox.innerHTML = '<div class="alert alert-error">Content is required.</div>'; return; }
 
   const tags = tagsStr ? tagsStr.split(',').map(t => t.trim()).filter(Boolean) : [];
-  const body = { title, category, description, author, published, tags, audience };
+  const imageUrl      = document.getElementById('postImageUrl').value;
+  const imagePublicId = document.getElementById('postImagePublicId').value;
+  const body = { title, category, description, author, published, tags, audience, imageUrl: imageUrl || null, imagePublicId: imagePublicId || null };
 
   btn.disabled = true;
   btn.innerHTML = '<span class="spinner"></span> Saving...';
@@ -273,6 +277,16 @@ function editPost(id) {
   document.getElementById('postAuthor').value = post.author;
   document.getElementById('postPublished').checked = post.published;
   selectAudience(post.audience || 'all');
+  if (post.imageUrl) {
+    document.getElementById('postImageUrl').value      = post.imageUrl;
+    document.getElementById('postImagePublicId').value = post.imagePublicId || '';
+    document.getElementById('imagePreview').src        = post.imageUrl;
+    document.getElementById('imageFileName').textContent = 'Current image';
+    document.getElementById('imageUploadPlaceholder').classList.add('hidden');
+    document.getElementById('imagePreviewWrap').classList.remove('hidden');
+  } else {
+    removeImage();
+  }
   document.getElementById('postFormTitle').textContent = 'Edit Post';
 
   showTab('newpost', null);
@@ -288,6 +302,7 @@ function clearPostForm() {
   document.getElementById('postAuthor').value = 'CyberWatch Kenya Team';
   document.getElementById('postPublished').checked = false;
   selectAudience('all');
+  removeImage();
   document.getElementById('postFormTitle').textContent = 'New Post';
   document.getElementById('postFormAlert').innerHTML = '';
 }
@@ -637,6 +652,76 @@ async function sendTestDigest() {
     btn.disabled = false;
     btn.innerHTML = '⭐ Send Weekly Digest Now';
   }
+}
+
+// ─────────────────────────────────────────────
+// IMAGE UPLOAD
+// ─────────────────────────────────────────────
+
+async function handleImageSelect(input) {
+  if (input.files && input.files[0]) {
+    await uploadImage(input.files[0]);
+  }
+}
+
+function handleImageDrop(event) {
+  event.preventDefault();
+  document.getElementById('imageUploadArea').style.borderColor = '';
+  const file = event.dataTransfer.files[0];
+  if (file && file.type.startsWith('image/')) {
+    uploadImage(file);
+  }
+}
+
+async function uploadImage(file) {
+  if (file.size > 5 * 1024 * 1024) {
+    showToast('❌ Image must be under 5MB', 'error');
+    return;
+  }
+
+  // Show spinner
+  document.getElementById('imageUploadPlaceholder').classList.add('hidden');
+  document.getElementById('imagePreviewWrap').classList.add('hidden');
+  document.getElementById('imageUploadSpinner').classList.remove('hidden');
+
+  const formData = new FormData();
+  formData.append('image', file);
+
+  try {
+    const res  = await authFetch(`${API}/upload/image`, { method: 'POST', body: formData, headers: {} });
+    const data = await res.json();
+
+    document.getElementById('imageUploadSpinner').classList.add('hidden');
+
+    if (data.success) {
+      document.getElementById('postImageUrl').value      = data.imageUrl;
+      document.getElementById('postImagePublicId').value = data.publicId;
+      document.getElementById('imagePreview').src        = data.imageUrl;
+      document.getElementById('imageFileName').textContent = file.name;
+      document.getElementById('imagePreviewWrap').classList.remove('hidden');
+      document.getElementById('imageUploadArea').style.borderColor = 'var(--green)';
+      showToast('✅ Image uploaded!');
+    } else {
+      document.getElementById('imageUploadPlaceholder').classList.remove('hidden');
+      showToast('❌ ' + data.message, 'error');
+    }
+  } catch (err) {
+    document.getElementById('imageUploadSpinner').classList.add('hidden');
+    document.getElementById('imageUploadPlaceholder').classList.remove('hidden');
+    showToast('❌ Upload failed', 'error');
+  }
+}
+
+function removeImage() {
+  document.getElementById('postImageUrl').value      = '';
+  document.getElementById('postImagePublicId').value = '';
+  document.getElementById('imagePreview').src        = '';
+  document.getElementById('imageFileName').textContent = '';
+  document.getElementById('imageUploadPlaceholder').classList.remove('hidden');
+  document.getElementById('imagePreviewWrap').classList.add('hidden');
+  document.getElementById('imageUploadSpinner').classList.add('hidden');
+  document.getElementById('imageUploadArea').style.borderColor = '';
+  document.getElementById('imageFileInput').value = '';
 }
 
 function logout() {
