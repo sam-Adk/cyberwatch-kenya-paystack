@@ -749,6 +749,60 @@ function removeImage() {
   document.getElementById('imageFileInput').value = '';
 }
 
+// ─────────────────────────────────────────────
+// TEST SMS
+// ─────────────────────────────────────────────
+
+function openTestSMS() {
+  document.getElementById('testSMSModal').classList.remove('hidden');
+  document.getElementById('testSMSResult').innerHTML = '';
+  document.body.style.overflow = 'hidden';
+}
+
+function closeTestSMS() {
+  document.getElementById('testSMSModal').classList.add('hidden');
+  document.body.style.overflow = '';
+}
+
+async function sendTestSMS() {
+  const phone = document.getElementById('testSMSPhone').value.trim();
+  const resultEl = document.getElementById('testSMSResult');
+  const btn = document.getElementById('testSMSBtn');
+
+  if (!phone) {
+    resultEl.innerHTML = '<div class="alert alert-error">⚠️ Please enter a phone number</div>';
+    return;
+  }
+
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span> Sending...';
+  resultEl.innerHTML = '';
+
+  try {
+    const res  = await authFetch(`${API}/newsletters/admin/test-sms`, {
+      method: 'POST',
+      body: JSON.stringify({ phone })
+    });
+    const data = await res.json();
+
+    if (data.success) {
+      resultEl.innerHTML = `<div class="alert alert-success">${data.message}</div>`;
+      showToast('✅ Test SMS sent!');
+    } else {
+      resultEl.innerHTML = `<div class="alert alert-error">❌ ${data.message}</div>`;
+      // Show full result for debugging
+      if (data.result) {
+        resultEl.innerHTML += `<pre style="font-size:10px;color:var(--muted);margin-top:8px;overflow:auto;">${JSON.stringify(data.result, null, 2)}</pre>`;
+      }
+    }
+  } catch (err) {
+    resultEl.innerHTML = '<div class="alert alert-error">❌ Cannot connect to server</div>';
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '📱 Send Test SMS';
+  }
+}
+
 function logout() {
   if (confirm('Logout from the dashboard?')) {
     localStorage.removeItem('cwk_token');
