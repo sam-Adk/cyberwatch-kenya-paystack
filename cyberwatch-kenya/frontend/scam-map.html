@@ -457,6 +457,11 @@
 
         <!-- SVG MAP -->
         <div class="map-wrapper">
+          <!-- DEBUG PANEL -->
+          <div id="mapDebug" style="padding:8px 16px;background:#0a0a0a;font-family:'Courier New',monospace;font-size:10px;color:#ffcc00;border-bottom:1px solid #1a3a1a;display:none;"></div>
+          <div style="padding:6px 16px;background:#060e06;border-bottom:1px solid #1a3a1a;text-align:right;">
+            <button onclick="document.getElementById('mapDebug').style.display='block';testMapAPI()" style="background:none;border:1px solid #334433;color:#334433;font-size:10px;padding:2px 8px;border-radius:4px;cursor:pointer;font-family:'Courier New',monospace;">debug</button>
+          </div>
           <div class="map-toolbar">
             <span class="map-toolbar-title">🗺️ KENYA — 47 COUNTIES</span>
             <div class="map-legend">
@@ -792,10 +797,42 @@
 
     let mapData = null;
 
-    async function loadMapData() {
+    // DEBUG: Test API directly and show result
+    async function testMapAPI() {
+      const debugEl = document.getElementById('mapDebug');
+      if (!debugEl) return;
+      debugEl.textContent = 'Testing API...';
       try {
         const res  = await fetch(`${API}/subscribers/reports/map-data`);
-        const data = await res.json();
+        const text = await res.text();
+        debugEl.textContent = 'API Response: ' + text.substring(0, 300);
+      } catch(e) {
+        debugEl.textContent = 'Error: ' + e.message;
+      }
+    }
+
+    async function loadMapData() {
+      try {
+        const controller = new AbortController();
+        setTimeout(() => controller.abort(), 12000);
+
+        const res = await fetch(`${API}/subscribers/reports/map-data`, {
+          signal: controller.signal
+        });
+
+        // Handle non-JSON response (Render sleeping)
+        const text = await res.text();
+        let data;
+        try {
+          data = JSON.parse(text);
+        } catch(e) {
+          console.log('Server waking up — retrying in 10s...');
+          document.getElementById('hotspotList').innerHTML =
+            '<div style="text-align:center;padding:16px;color:var(--muted);font-size:12px;">⏱️ Server waking up...<br>Retrying in 10 seconds</div>';
+          setTimeout(loadMapData, 10000);
+          return;
+        }
+
         if (!data.success) return;
 
         mapData = data;
@@ -803,9 +840,15 @@
         renderHotspots(data);
         renderStats(data);
         await renderRecentActivity();
+
       } catch (err) {
-        console.error('Map data error:', err);
-        renderEmptyState();
+        console.error('Map data error:', err.message);
+        if (err.name === 'AbortError') {
+          document.getElementById('hotspotList').innerHTML =
+            '<div style="text-align:center;padding:16px;color:var(--muted);font-size:12px;">⏱️ Timed out.<br><button onclick="loadMapData()" style="background:none;border:1px solid var(--green);color:var(--green);padding:4px 12px;border-radius:4px;cursor:pointer;margin-top:8px;">Retry</button></div>';
+        } else {
+          renderEmptyState();
+        }
       }
     }
 
