@@ -973,5 +973,15 @@
     // Auto-refresh every 5 minutes
     setInterval(loadMapData, 5 * 60 * 1000);
   </script>
+  <script>
+    (function() {
+      const page = window.location.pathname.replace(/\/index\.html$/, "/") || "/";
+      fetch("https://cyberwatch-kenya.onrender.com/api/analytics/track", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ page })
+      }).catch(() => {});
+    })();
+  </script>
 </body>
 </html>
