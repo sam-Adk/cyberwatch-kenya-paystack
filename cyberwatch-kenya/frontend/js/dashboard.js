@@ -935,7 +935,18 @@ async function fetchVisitors() {
   </td></tr>`;
 
   try {
-    const res  = await authFetch(`${API}/analytics/visitors?filter=${_visitorFilter}&page=${_visitorPage}&limit=50`);
+    const url = `${API}/analytics/visitors?filter=${_visitorFilter}&page=${_visitorPage}&limit=50`;
+    const res  = await authFetch(url);
+
+    // Check HTTP status first
+    if (!res.ok) {
+      const errText = await res.text();
+      tbody.innerHTML = `<tr><td colspan="4" style="text-align:center;padding:40px;color:var(--red);">
+        ❌ Error ${res.status}: ${errText.substring(0, 100)}
+      </td></tr>`;
+      return;
+    }
+
     const data = await res.json();
 
     if (!data.success || data.visitors.length === 0) {
