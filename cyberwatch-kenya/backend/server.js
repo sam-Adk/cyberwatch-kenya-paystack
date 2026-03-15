@@ -21,7 +21,8 @@ const newsletterRoutes = require('./routes/newsletterRoutes');
 const subscriberRoutes = require('./routes/subscriberRoutes');
 const mpesaRoutes = require('./routes/mpesaRoutes');
 const paystackRoutes = require('./routes/paystackRoutes');
-const uploadRoutes    = require('./routes/uploadRoutes');
+const uploadRoutes      = require('./routes/uploadRoutes');
+const analyticsRoutes   = require('./routes/analyticsRoutes');
 const { startCronJobs } = require('./utils/cronJobs');
 
 const app = express();
@@ -53,6 +54,7 @@ app.use('/api/subscribers', subscriberRoutes);
 app.use('/api/mpesa', mpesaRoutes);
 app.use('/api/paystack', paystackRoutes);  // Paystack payments
 app.use('/api/upload',   uploadRoutes);     // Image uploads
+app.use('/api/analytics', analyticsRoutes); // Page view tracking
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {
