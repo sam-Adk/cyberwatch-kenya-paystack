@@ -930,56 +930,77 @@ function closeVisitorLog() {
 
 async function fetchVisitors() {
   const tbody = document.getElementById('visitorTableBody');
+  if (!tbody) return;
+
   tbody.innerHTML = `<tr><td colspan="4" style="text-align:center;padding:40px;color:var(--muted);">
     <div class="spinner" style="margin:0 auto 10px;"></div>Loading...
   </td></tr>`;
 
   try {
-    const url = `${API}/analytics/visitors?filter=${_visitorFilter}&page=${_visitorPage}&limit=50`;
-    const res  = await authFetch(url);
+    const token = localStorage.getItem('cwk_token');
+    const url   = `${API}/analytics/visitors?filter=${_visitorFilter}&page=${_visitorPage}&limit=50`;
 
-    // Check HTTP status first
-    if (!res.ok) {
-      const errText = await res.text();
-      tbody.innerHTML = `<tr><td colspan="4" style="text-align:center;padding:40px;color:var(--red);">
-        ❌ Error ${res.status}: ${errText.substring(0, 100)}
+    // Use raw fetch with timeout — bypass authFetch to avoid undefined return issues
+    const controller = new AbortController();
+    const timeout    = setTimeout(() => controller.abort(), 8000);
+
+    let res;
+    try {
+      res = await fetch(url, {
+        headers: {
+          'Content-Type':  'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        signal: controller.signal
+      });
+    } finally {
+      clearTimeout(timeout);
+    }
+
+    if (!res || !res.ok) {
+      const status = res ? res.status : 'timeout';
+      tbody.innerHTML = `<tr><td colspan="4" style="text-align:center;padding:32px;color:var(--red);">
+        ❌ Request failed (${status}). Check you are logged in.
       </td></tr>`;
       return;
     }
 
     const data = await res.json();
+    const visitors = data.visitors || [];
 
-    if (!data.success || data.visitors.length === 0) {
-      tbody.innerHTML = `<tr><td colspan="4" style="text-align:center;padding:40px;color:var(--muted);">
-        No visitors found for this period.
+    if (visitors.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="4" style="text-align:center;padding:40px;">
+        <div style="font-size:32px;margin-bottom:12px;">👁️</div>
+        <div style="color:var(--muted);font-size:14px;">No visits recorded yet for this period.</div>
+        <div style="color:#334433;font-size:12px;margin-top:8px;font-family:var(--font-mono);">
+          Visits will appear here once people browse your site.
+        </div>
       </td></tr>`;
-      document.getElementById('visitorCount').textContent = '0 visits';
+      document.getElementById('visitorCount').textContent    = '0 visits';
       document.getElementById('visitorPageInfo').textContent = '';
       document.getElementById('vPrevBtn').disabled = true;
       document.getElementById('vNextBtn').disabled = true;
       return;
     }
 
-    _visitorTotal = data.total;
-    _visitorPages = data.pages;
+    _visitorTotal = data.total  || visitors.length;
+    _visitorPages = data.pages  || 1;
 
-    tbody.innerHTML = data.visitors.map(v => {
+    tbody.innerHTML = visitors.map(v => {
       const pageName = PAGE_NAMES[v.page] || v.page;
       const device   = detectDevice(v.userAgent);
       const browser  = detectBrowser(v.userAgent);
       const time     = timeAgo(v.createdAt);
+      const isRecent = v.createdAt && (Date.now() - new Date(v.createdAt)) < 300000;
       const referrer = v.referrer
-        ? v.referrer.replace(/https?:\/\/(www\.)?/, '').substring(0, 30)
-        : 'Direct visit';
+        ? v.referrer.replace(/https?:\/\/(www\.)?/, '').substring(0, 35)
+        : '— Direct';
 
-      const timeColor = v.createdAt && (Date.now() - new Date(v.createdAt)) < 300000
-        ? '#00ff41' : 'var(--muted)';
-
-      return `<tr style="border-bottom:1px solid rgba(255,255,255,0.04);transition:background 0.15s;" 
+      return `<tr style="border-bottom:1px solid rgba(255,255,255,0.04);"
                   onmouseover="this.style.background='rgba(0,255,65,0.03)'"
                   onmouseout="this.style.background=''">
         <td style="padding:12px 16px;font-size:13px;color:#fff;font-weight:500;">${pageName}</td>
-        <td style="padding:12px 16px;font-size:12px;color:${timeColor};font-family:var(--font-mono);">${time}</td>
+        <td style="padding:12px 16px;font-size:12px;color:${isRecent ? '#00ff41' : 'var(--muted)'};font-family:var(--font-mono);">${time}</td>
         <td style="padding:12px 16px;font-size:12px;color:var(--muted);" title="${v.referrer || 'Direct'}">${referrer}</td>
         <td style="padding:12px 16px;font-size:12px;color:var(--muted);">${device} · ${browser}</td>
       </tr>`;
@@ -993,8 +1014,10 @@ async function fetchVisitors() {
     document.getElementById('vNextBtn').disabled = _visitorPage >= _visitorPages;
 
   } catch (err) {
-    tbody.innerHTML = `<tr><td colspan="4" style="text-align:center;padding:40px;color:var(--red);">
-      ❌ Failed to load visitors
+    const msg = err.name === 'AbortError' ? 'Request timed out after 8 seconds' : err.message;
+    const tbody2 = document.getElementById('visitorTableBody');
+    if (tbody2) tbody2.innerHTML = `<tr><td colspan="4" style="text-align:center;padding:32px;color:var(--red);">
+      ❌ ${msg}
     </td></tr>`;
   }
 }
