@@ -779,14 +779,13 @@ async function loadAnalytics() {
     const { stats, topPages, daily, monthly, visitors } = data;
 
     // ── STAT CARDS ──
-    document.getElementById('statTotalViews').textContent = (stats.totalViews || 0).toLocaleString();
-    document.getElementById('statTodayViews').textContent = (stats.todayViews || 0).toLocaleString();
-    document.getElementById('statWeekViews').textContent  = (stats.weekViews  || 0).toLocaleString();
-    document.getElementById('statMonthViews').textContent = (stats.monthViews || 0).toLocaleString();
-    document.getElementById('statYearViews').textContent  = (stats.yearViews  || 0).toLocaleString();
-
-    const upd = document.getElementById('analyticsUpdated');
-    if (upd) upd.textContent = 'Last updated: ' + new Date().toLocaleTimeString('en-KE');
+    const setEl = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+    setEl('statTotalViews', (stats.totalViews || 0).toLocaleString());
+    setEl('statTodayViews', (stats.todayViews || 0).toLocaleString());
+    setEl('statWeekViews',  (stats.weekViews  || 0).toLocaleString());
+    setEl('statMonthViews', (stats.monthViews || 0).toLocaleString());
+    setEl('statYearViews',  (stats.yearViews  || 0).toLocaleString());
+    setEl('analyticsUpdated', 'Last updated: ' + new Date().toLocaleTimeString('en-KE'));
 
     // ── STORE CHART DATA ──
     window._analyticsDaily   = daily   || [];
