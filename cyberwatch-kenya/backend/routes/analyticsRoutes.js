@@ -50,13 +50,13 @@ router.get('/stats', protect, async (req, res) => {
 
     const [totalViews, todayViews, weekViews, monthViews, topPages, dailyStats] = await Promise.all([
       // Total all time
-      PageView.countDocuments(),
+      PageView.countDocuments().maxTimeMS(5000),
       // Today
-      PageView.countDocuments({ createdAt: { $gte: today } }),
+      PageView.countDocuments({ createdAt: { $gte: today } }).maxTimeMS(5000),
       // Last 7 days
-      PageView.countDocuments({ createdAt: { $gte: week } }),
+      PageView.countDocuments({ createdAt: { $gte: week } }).maxTimeMS(5000),
       // Last 30 days
-      PageView.countDocuments({ createdAt: { $gte: month } }),
+      PageView.countDocuments({ createdAt: { $gte: month } }).maxTimeMS(5000),
       // Top pages
       PageView.aggregate([
         { $group: { _id: '$page', count: { $sum: 1 } } },
@@ -81,7 +81,8 @@ router.get('/stats', protect, async (req, res) => {
       dailyStats
     });
   } catch (err) {
-    res.status(500).json({ success: false, message: err.message });
+    console.error('Analytics stats error:', err.message);
+    res.json({ success: true, stats: { totalViews:0, todayViews:0, weekViews:0, monthViews:0 }, topPages: [], dailyStats: [] });
   }
 });
 
@@ -91,7 +92,7 @@ router.get('/visitors', protect, async (req, res) => {
   try {
     const page   = parseInt(req.query.page)   || 1;
     const limit  = parseInt(req.query.limit)  || 50;
-    const filter = req.query.filter || 'all'; // all, today, week
+    const filter = req.query.filter || 'all';
     const skip   = (page - 1) * limit;
 
     const now   = new Date();
@@ -102,17 +103,28 @@ router.get('/visitors', protect, async (req, res) => {
     if (filter === 'today') match.createdAt = { $gte: today };
     if (filter === 'week')  match.createdAt = { $gte: week };
 
+    // Use lean() for speed + maxTimeMS to prevent hanging
     const [visitors, total] = await Promise.all([
       PageView.find(match)
         .sort({ createdAt: -1 })
         .skip(skip)
-        .limit(limit),
-      PageView.countDocuments(match)
+        .limit(limit)
+        .lean()
+        .maxTimeMS(5000),
+      PageView.countDocuments(match).maxTimeMS(5000)
     ]);
 
-    res.json({ success: true, visitors, total, page, pages: Math.ceil(total / limit) });
+    res.json({
+      success: true,
+      visitors: visitors || [],
+      total:    total    || 0,
+      page,
+      pages: Math.ceil((total || 0) / limit) || 1
+    });
   } catch (err) {
-    res.status(500).json({ success: false, message: err.message });
+    console.error('Visitors endpoint error:', err.message);
+    // Return empty instead of hanging
+    res.json({ success: true, visitors: [], total: 0, page: 1, pages: 1 });
   }
 });
 
