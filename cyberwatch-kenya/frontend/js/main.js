@@ -328,6 +328,7 @@ async function submitScamReport() {
         reporterEmail: email,
         scamType: type,
         platform,
+        county,
         amountLost: parseInt(amount),
         description
       })
