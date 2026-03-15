@@ -148,15 +148,87 @@ async function notifyNewSubscriber(subscriber) {
 // ── NEW SCAM REPORT NOTIFICATION ─────────────
 async function notifyNewReport(report) {
   const smsMsg =
-    `🚨 CyberWatch Kenya\n` +
-    `NEW SCAM REPORT!\n\n` +
+    `🚨 NEW SCAM REPORT!\n\n` +
     `From: ${report.reporterName}\n` +
     `Type: ${report.scamType}\n` +
     `County: ${report.county || 'Not specified'}\n` +
     `Amount: ${report.amountLost > 0 ? 'KSh ' + report.amountLost.toLocaleString() : 'None'}\n\n` +
     `Review on your dashboard.`;
 
-  await notifyAdminSMS(smsMsg);
+  const emailHTML = `
+<!DOCTYPE html>
+<html>
+<body style="margin:0;padding:0;background:#050a05;font-family:Arial,sans-serif;">
+<table width="100%" cellpadding="0" cellspacing="0" style="background:#050a05;padding:32px 0;">
+  <tr><td align="center">
+    <table width="500" cellpadding="0" cellspacing="0" style="max-width:500px;width:100%;">
+      <tr>
+        <td style="background:linear-gradient(135deg,#1a0000,#2d0505);border-radius:12px 12px 0 0;padding:32px;text-align:center;border:1px solid rgba(255,34,68,0.3);border-bottom:none;">
+          <div style="font-size:48px;margin-bottom:12px;">🚨</div>
+          <h1 style="margin:0 0 6px;font-size:22px;color:#fff;font-weight:800;">New Scam Report!</h1>
+          <p style="margin:0;font-size:13px;color:#ff2244;font-family:'Courier New',monospace;">NEEDS YOUR REVIEW</p>
+        </td>
+      </tr>
+      <tr>
+        <td style="background:#ff2244;padding:12px 32px;border-left:1px solid rgba(255,34,68,0.3);border-right:1px solid rgba(255,34,68,0.3);">
+          <p style="margin:0;font-size:13px;color:#fff;font-weight:800;text-align:center;">${report.scamType.toUpperCase()}</p>
+        </td>
+      </tr>
+      <tr>
+        <td style="background:#0a0505;padding:28px 32px;border:1px solid rgba(255,34,68,0.2);border-top:none;border-bottom:none;">
+          <table width="100%" cellpadding="0" cellspacing="0" style="background:#050505;border:1px solid #2a1010;border-radius:8px;">
+            <tr><td style="padding:14px 18px;border-bottom:1px solid #1a0a0a;font-size:13px;">
+              <span style="color:#888;">From</span>
+              <span style="color:#fff;font-weight:700;float:right;">${report.reporterName}</span>
+            </td></tr>
+            <tr><td style="padding:14px 18px;border-bottom:1px solid #1a0a0a;font-size:13px;">
+              <span style="color:#888;">Type</span>
+              <span style="color:#ff2244;font-weight:700;float:right;">${report.scamType}</span>
+            </td></tr>
+            <tr><td style="padding:14px 18px;border-bottom:1px solid #1a0a0a;font-size:13px;">
+              <span style="color:#888;">County</span>
+              <span style="color:#fff;float:right;">${report.county || 'Not specified'}</span>
+            </td></tr>
+            <tr><td style="padding:14px 18px;border-bottom:1px solid #1a0a0a;font-size:13px;">
+              <span style="color:#888;">Amount Lost</span>
+              <span style="color:${report.amountLost > 0 ? '#ff4444' : '#888'};float:right;font-weight:${report.amountLost > 0 ? '700' : '400'};">
+                ${report.amountLost > 0 ? 'KSh ' + report.amountLost.toLocaleString() : 'None'}
+              </span>
+            </td></tr>
+            <tr><td style="padding:14px 18px;font-size:13px;">
+              <span style="color:#888;">Email</span>
+              <span style="color:#fff;float:right;">${report.reporterEmail || 'Not provided'}</span>
+            </td></tr>
+          </table>
+          <div style="margin-top:16px;background:#0d0505;border:1px solid #2a1010;border-radius:8px;padding:16px;">
+            <p style="margin:0 0 8px;font-size:11px;color:#ff2244;letter-spacing:1px;font-family:'Courier New',monospace;">DESCRIPTION</p>
+            <p style="margin:0;font-size:13px;color:#aabbaa;line-height:1.7;">${report.description.substring(0, 300)}${report.description.length > 300 ? '...' : ''}</p>
+          </div>
+          <div style="text-align:center;margin-top:20px;">
+            <a href="https://cyberwatch-kenya.onrender.com/dashboard.html"
+              style="display:inline-block;background:#ff2244;color:#fff;font-size:13px;font-weight:800;text-decoration:none;padding:12px 28px;border-radius:8px;">
+              Review on Dashboard →
+            </a>
+          </div>
+        </td>
+      </tr>
+      <tr>
+        <td style="background:#030303;border:1px solid #1a1a1a;border-radius:0 0 12px 12px;padding:16px;text-align:center;">
+          <p style="margin:0;font-size:11px;color:#334433;font-family:'Courier New',monospace;">🛡️ CYBERWATCH KENYA — ADMIN NOTIFICATION</p>
+        </td>
+      </tr>
+    </table>
+  </td></tr>
+</table>
+</body>
+</html>`;
+
+  // Send both SMS and email simultaneously
+  await Promise.allSettled([
+    notifyAdminSMS(smsMsg),
+    notifyAdminEmail(`🚨 New Scam Report — ${report.scamType} from ${report.reporterName}`, emailHTML)
+  ]);
+  console.log(`🚨 Admin notified of new scam report from ${report.reporterName}`);
 }
 
 module.exports = { notifyNewSubscriber, notifyNewReport };
