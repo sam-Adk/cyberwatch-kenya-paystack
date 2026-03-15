@@ -755,162 +755,207 @@ function removeImage() {
 // ─────────────────────────────────────────────
 
 async function loadAnalytics() {
-  // Single combined fetch with 10s timeout
   const token = localStorage.getItem('cwk_token');
+  if (!token) return;
 
-  const makeRequest = (url) => {
-    return Promise.race([
-      fetch(url, { headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' } }),
-      new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 10000))
+  try {
+    const res = await Promise.race([
+      fetch(`${API}/analytics/stats`, {
+        headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' }
+      }),
+      new Promise((_, rej) => setTimeout(() => rej(new Error('timeout')), 12000))
     ]);
-  };
 
-  // --- STATS ---
-  try {
-    const res  = await makeRequest(`${API}/analytics/stats`);
-    const data = await res.json();
-
-    if (data.success) {
-      const { stats, topPages, dailyStats } = data;
-
-      document.getElementById('statTotalViews').textContent  = (stats.totalViews  || 0).toLocaleString();
-      document.getElementById('statTodayViews').textContent  = (stats.todayViews  || 0).toLocaleString();
-      document.getElementById('statWeekViews').textContent   = (stats.weekViews   || 0).toLocaleString();
-      document.getElementById('statMonthViews').textContent  = (stats.monthViews  || 0).toLocaleString();
-
-      const updated = document.getElementById('analyticsUpdated');
-      if (updated) updated.textContent = 'Updated ' + new Date().toLocaleTimeString('en-KE');
-
-      // Top pages
-      const PAGE_NAMES_LOCAL = {
-        '/': '🏠 Homepage', '/index.html': '🏠 Homepage',
-        '/about.html': '👤 About', '/pricing.html': '💰 Pricing',
-        '/scam-map.html': '🗺️ Scam Map', '/subscribe.html': '📧 Subscribe',
-        '/login.html': '🔑 Login',
-      };
-
-      const topList = document.getElementById('topPagesList');
-      if (topList) {
-        if (!topPages || topPages.length === 0) {
-          topList.innerHTML = '<div style="text-align:center;padding:20px;color:var(--muted);font-size:13px;">No page data yet</div>';
-        } else {
-          const maxV = topPages[0].count;
-          topList.innerHTML = topPages.map(p => {
-            const name = PAGE_NAMES_LOCAL[p._id] || p._id;
-            const pct  = Math.round((p.count / maxV) * 100);
-            return `<div style="margin-bottom:14px;">
-              <div style="display:flex;justify-content:space-between;margin-bottom:5px;">
-                <span style="font-size:13px;color:#ccc;">${name}</span>
-                <span style="font-family:var(--font-mono);font-size:12px;color:var(--green);">${p.count}</span>
-              </div>
-              <div style="height:4px;background:var(--surface2);border-radius:2px;overflow:hidden;">
-                <div style="width:${pct}%;height:100%;background:#00ff41;border-radius:2px;"></div>
-              </div>
-            </div>`;
-          }).join('');
-        }
-      }
-
-      // Daily chart
-      const chartEl  = document.getElementById('dailyChart');
-      const labelsEl = document.getElementById('dailyChartLabels');
-      if (chartEl && dailyStats && dailyStats.length > 0) {
-        const maxDay = Math.max(...dailyStats.map(d => d.count));
-        chartEl.innerHTML = dailyStats.map(d => {
-          const h       = maxDay > 0 ? Math.max(4, Math.round((d.count / maxDay) * 180)) : 4;
-          const isToday = d._id === new Date().toISOString().slice(0,10);
-          return `<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;" title="${d._id}: ${d.count} views">
-            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted);">${d.count > 0 ? d.count : ''}</span>
-            <div style="width:100%;height:${h}px;background:${isToday ? '#00ff41' : 'rgba(0,255,65,0.3)'};border-radius:2px 2px 0 0;"></div>
-          </div>`;
-        }).join('');
-        if (labelsEl) labelsEl.innerHTML = dailyStats.map(d => {
-          const dt = new Date(d._id);
-          return `<div style="flex:1;text-align:center;font-family:var(--font-mono);font-size:9px;color:var(--muted);">${dt.getDate()}/${dt.getMonth()+1}</div>`;
-        }).join('');
-      } else if (chartEl) {
-        chartEl.innerHTML = '<div style="text-align:center;width:100%;padding:40px 0;color:var(--muted);font-size:12px;">No visit data yet</div>';
-      }
+    if (!res.ok) throw new Error(`Server error ${res.status} — Render may be waking up`);
+    const text = await res.text();
+    let data;
+    try {
+      data = JSON.parse(text);
+    } catch(e) {
+      throw new Error('Render is waking up — try again in 30 seconds');
     }
-  } catch (err) {
-    console.error('Analytics stats error:', err.message);
-    ['statTotalViews','statTodayViews','statWeekViews','statMonthViews'].forEach(id => {
-      const el = document.getElementById(id);
-      if (el) el.textContent = err.message === 'timeout' ? '...' : '—';
-    });
-  }
+    if (!data.success) throw new Error('API returned failure');
 
-  // --- VISITORS ---
-  const vLog = document.getElementById('inlineVisitorLog');
-  if (!vLog) return;
+    const { stats, topPages, daily, monthly, visitors } = data;
 
-  try {
-    const res  = await makeRequest(`${API}/analytics/visitors?filter=all&page=1&limit=100`);
-    const data = await res.json();
-    const visitors = data.visitors || [];
+    // ── STAT CARDS ──
+    document.getElementById('statTotalViews').textContent = (stats.totalViews || 0).toLocaleString();
+    document.getElementById('statTodayViews').textContent = (stats.todayViews || 0).toLocaleString();
+    document.getElementById('statWeekViews').textContent  = (stats.weekViews  || 0).toLocaleString();
+    document.getElementById('statMonthViews').textContent = (stats.monthViews || 0).toLocaleString();
+    document.getElementById('statYearViews').textContent  = (stats.yearViews  || 0).toLocaleString();
 
-    if (visitors.length === 0) {
-      vLog.innerHTML = `<div style="text-align:center;padding:32px;color:var(--muted);">
-        <div style="font-size:32px;margin-bottom:10px;">👁️</div>
-        No visits recorded yet — they will appear here once people browse your site.
-      </div>`;
-      return;
-    }
+    const upd = document.getElementById('analyticsUpdated');
+    if (upd) upd.textContent = 'Last updated: ' + new Date().toLocaleTimeString('en-KE');
 
-    const PAGE_NAMES_LOCAL = {
+    // ── STORE CHART DATA ──
+    window._analyticsDaily   = daily   || [];
+    window._analyticsMonthly = monthly || [];
+    renderChart('daily');
+
+    // ── TOP PAGES ──
+    const PAGE_NAMES = {
       '/': '🏠 Homepage', '/index.html': '🏠 Homepage',
       '/about.html': '👤 About', '/pricing.html': '💰 Pricing',
       '/scam-map.html': '🗺️ Scam Map', '/subscribe.html': '📧 Subscribe',
       '/login.html': '🔑 Login',
     };
+    const topEl = document.getElementById('topPagesList');
+    if (topEl) {
+      if (!topPages || topPages.length === 0) {
+        topEl.innerHTML = '<div style="color:var(--muted);font-size:13px;text-align:center;padding:16px;">No data yet</div>';
+      } else {
+        const mx = topPages[0].count;
+        topEl.innerHTML = topPages.map(p => {
+          const name = PAGE_NAMES[p._id] || p._id;
+          const pct  = Math.round((p.count / mx) * 100);
+          return `<div style="margin-bottom:14px;">
+            <div style="display:flex;justify-content:space-between;margin-bottom:5px;">
+              <span style="font-size:13px;color:#ccc;">${name}</span>
+              <span style="font-family:var(--font-mono);font-size:12px;color:var(--green);">${p.count.toLocaleString()}</span>
+            </div>
+            <div style="height:5px;background:var(--surface2);border-radius:3px;overflow:hidden;">
+              <div style="width:${pct}%;height:100%;background:linear-gradient(90deg,#00ff41,#00cc33);border-radius:3px;"></div>
+            </div>
+          </div>`;
+        }).join('');
+      }
+    }
 
-    vLog.innerHTML = `<table style="width:100%;border-collapse:collapse;">
-      <thead><tr style="background:#060e06;position:sticky;top:0;">
-        <th style="padding:10px 14px;text-align:left;font-family:var(--font-mono);font-size:10px;color:var(--green);border-bottom:1px solid var(--border);">PAGE</th>
-        <th style="padding:10px 14px;text-align:left;font-family:var(--font-mono);font-size:10px;color:var(--green);border-bottom:1px solid var(--border);">TIME</th>
-        <th style="padding:10px 14px;text-align:left;font-family:var(--font-mono);font-size:10px;color:var(--green);border-bottom:1px solid var(--border);">FROM</th>
-        <th style="padding:10px 14px;text-align:left;font-family:var(--font-mono);font-size:10px;color:var(--green);border-bottom:1px solid var(--border);">DEVICE</th>
-      </tr></thead>
-      <tbody>
-        ${visitors.map(v => {
-          const name    = PAGE_NAMES_LOCAL[v.page] || v.page;
-          const ua      = v.userAgent || '';
-          const isMob   = /iPhone|Android.*Mobile/i.test(ua);
-          const browser = /Chrome/i.test(ua) && !/Edg/i.test(ua) ? 'Chrome'
+    // ── RECENT VISITORS ──
+    const vLog = document.getElementById('inlineVisitorLog');
+    if (vLog) {
+      if (!visitors || visitors.length === 0) {
+        vLog.innerHTML = `<div style="text-align:center;padding:32px;color:var(--muted);">
+          <div style="font-size:32px;margin-bottom:10px;">👁️</div>
+          No visits recorded yet.
+        </div>`;
+      } else {
+        const PAGE_NAMES2 = {
+          '/': '🏠 Homepage', '/index.html': '🏠 Homepage',
+          '/about.html': '👤 About', '/pricing.html': '💰 Pricing',
+          '/scam-map.html': '🗺️ Scam Map', '/subscribe.html': '📧 Subscribe',
+          '/login.html': '🔑 Login',
+        };
+        vLog.innerHTML = `<table style="width:100%;border-collapse:collapse;">
+          <thead><tr style="background:var(--surface2);">
+            <th style="padding:10px 14px;text-align:left;font-family:var(--font-mono);font-size:10px;color:var(--green);border-bottom:1px solid var(--border);letter-spacing:1px;">PAGE</th>
+            <th style="padding:10px 14px;text-align:left;font-family:var(--font-mono);font-size:10px;color:var(--green);border-bottom:1px solid var(--border);letter-spacing:1px;">TIME</th>
+            <th style="padding:10px 14px;text-align:left;font-family:var(--font-mono);font-size:10px;color:var(--green);border-bottom:1px solid var(--border);letter-spacing:1px;">SOURCE</th>
+            <th style="padding:10px 14px;text-align:left;font-family:var(--font-mono);font-size:10px;color:var(--green);border-bottom:1px solid var(--border);letter-spacing:1px;">DEVICE</th>
+          </tr></thead>
+          <tbody>
+          ${visitors.map(v => {
+            const name  = PAGE_NAMES2[v.page] || v.page;
+            const ua    = v.userAgent || '';
+            const mob   = /iPhone|Android.*Mobile/i.test(ua);
+            const brow  = /Chrome/i.test(ua) && !/Edg/i.test(ua) ? 'Chrome'
                         : /Firefox/i.test(ua) ? 'Firefox'
                         : /Safari/i.test(ua) && !/Chrome/i.test(ua) ? 'Safari'
                         : /Edg/i.test(ua) ? 'Edge' : 'Browser';
-          const diff    = Date.now() - new Date(v.createdAt).getTime();
-          const mins    = Math.floor(diff/60000);
-          const hours   = Math.floor(diff/3600000);
-          const days    = Math.floor(diff/86400000);
-          const time    = mins < 1 ? '🟢 Just now'
-                        : mins < 60 ? mins + 'm ago'
-                        : hours < 24 ? hours + 'h ago'
-                        : days + 'd ago';
-          const isNew   = diff < 300000;
-          const ref     = v.referrer ? v.referrer.replace(/https?:\/\/(www\.)?/,'').substring(0,28) : '— Direct';
-          return `<tr onmouseover="this.style.background='rgba(0,255,65,0.03)'" onmouseout="this.style.background=''" style="border-bottom:1px solid rgba(255,255,255,0.04);">
-            <td style="padding:9px 14px;font-size:13px;color:#ddd;">${name}</td>
-            <td style="padding:9px 14px;font-size:11px;color:${isNew?'#00ff41':'var(--muted)'};font-family:var(--font-mono);">${time}</td>
-            <td style="padding:9px 14px;font-size:11px;color:var(--muted);">${ref}</td>
-            <td style="padding:9px 14px;font-size:11px;color:var(--muted);">${isMob?'📱':'🖥️'} ${browser}</td>
-          </tr>`;
-        }).join('')}
-      </tbody>
-    </table>
-    <div style="padding:10px 14px;border-top:1px solid var(--border);font-family:var(--font-mono);font-size:10px;color:#334433;">
-      ${data.total || visitors.length} total visits
-    </div>`;
+            const diff  = Date.now() - new Date(v.createdAt).getTime();
+            const mins  = Math.floor(diff/60000);
+            const hrs   = Math.floor(diff/3600000);
+            const days  = Math.floor(diff/86400000);
+            const time  = mins < 1 ? '🟢 Just now'
+                        : mins < 60 ? mins+'m ago'
+                        : hrs < 24 ? hrs+'h ago'
+                        : days === 1 ? 'Yesterday'
+                        : new Date(v.createdAt).toLocaleDateString('en-KE',{day:'numeric',month:'short'});
+            const isNew = diff < 300000;
+            const src   = v.referrer
+              ? v.referrer.replace(/https?:\/\/(www\.)?/,'').substring(0,25)
+              : '— Direct';
+            return `<tr onmouseover="this.style.background='rgba(0,255,65,0.03)'" onmouseout="this.style.background=''" style="border-bottom:1px solid rgba(255,255,255,0.04);">
+              <td style="padding:9px 14px;font-size:13px;color:#ddd;">${name}</td>
+              <td style="padding:9px 14px;font-size:11px;color:${isNew?'#00ff41':'var(--muted)'};font-family:var(--font-mono);">${time}</td>
+              <td style="padding:9px 14px;font-size:11px;color:var(--muted);">${src}</td>
+              <td style="padding:9px 14px;font-size:11px;color:var(--muted);">${mob?'📱':'🖥️'} ${brow}</td>
+            </tr>`;
+          }).join('')}
+          </tbody>
+        </table>
+        <div style="padding:10px 16px;border-top:1px solid var(--border);font-family:var(--font-mono);font-size:10px;color:#334433;">
+          Showing last 50 of ${stats.totalViews.toLocaleString()} total visits
+        </div>`;
+      }
+    }
 
   } catch (err) {
-    vLog.innerHTML = `<div style="text-align:center;padding:32px;color:var(--muted);font-size:13px;">
-      ${err.message === 'timeout'
-        ? '⏱️ Loading timed out — Render may be waking up. Try clicking Analytics again in 30 seconds.'
-        : '❌ ' + err.message}
-    </div>`;
+    const msg = err.message === 'timeout'
+      ? '⏱️ Render is waking up — click Analytics again in 30 seconds'
+      : '❌ ' + err.message;
+    ['statTotalViews','statTodayViews','statWeekViews','statMonthViews','statYearViews'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.textContent = '—';
+    });
+    const vLog = document.getElementById('inlineVisitorLog');
+    if (vLog) vLog.innerHTML = `<div style="text-align:center;padding:24px;color:var(--muted);font-size:13px;">${msg}</div>`;
+    console.error('Analytics error:', err.message);
   }
 }
+
+function renderChart(type) {
+  // Update button styles
+  ['daily','monthly'].forEach(t => {
+    const btn = document.getElementById(`chartBtn-${t}`);
+    if (btn) {
+      btn.style.borderColor = t === type ? 'var(--green)' : '';
+      btn.style.color       = t === type ? 'var(--green)' : '';
+      btn.style.background  = t === type ? 'rgba(0,255,65,0.08)' : '';
+    }
+    const panel = document.getElementById(`chartPanel-${t}`);
+    if (panel) panel.style.display = t === type ? 'block' : 'none';
+  });
+
+  const data = type === 'daily'
+    ? (window._analyticsDaily   || [])
+    : (window._analyticsMonthly || []);
+
+  const chartEl  = document.getElementById(`${type}Chart`);
+  const labelsEl = document.getElementById(`${type}ChartLabels`);
+  if (!chartEl) return;
+
+  if (data.length === 0) {
+    chartEl.innerHTML = '<div style="text-align:center;width:100%;padding:40px 0;color:var(--muted);font-size:12px;">No data yet — visits will appear here</div>';
+    if (labelsEl) labelsEl.innerHTML = '';
+    return;
+  }
+
+  const maxVal  = Math.max(...data.map(d => d.count), 1);
+  const todayStr = new Date().toISOString().slice(0, 10);
+  const thisMonth = new Date().toISOString().slice(0, 7);
+
+  chartEl.innerHTML = data.map(d => {
+    const val     = type === 'daily' ? d.date   : d.month;
+    const count   = d.count;
+    const height  = Math.max(4, Math.round((count / maxVal) * 160));
+    const isCurr  = type === 'daily' ? val === todayStr : val === thisMonth;
+    const color   = isCurr ? '#00ff41' : count > 0 ? 'rgba(0,255,65,0.4)' : 'rgba(255,255,255,0.05)';
+    const label   = type === 'daily'
+      ? new Date(val+'T00:00:00').toLocaleDateString('en-KE',{day:'numeric',month:'short'})
+      : new Date(val+'-01').toLocaleDateString('en-KE',{month:'short',year:'2-digit'});
+    return `<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;cursor:default;" title="${label}: ${count} views">
+      <span style="font-family:var(--font-mono);font-size:9px;color:${count>0?'var(--muted)':'transparent'};">${count > 0 ? count : ''}</span>
+      <div style="width:100%;height:${height}px;background:${color};border-radius:2px 2px 0 0;transition:height 0.5s ease;"></div>
+    </div>`;
+  }).join('');
+
+  if (labelsEl) {
+    labelsEl.innerHTML = data.map(d => {
+      const val = type === 'daily' ? d.date : d.month;
+      const label = type === 'daily'
+        ? new Date(val+'T00:00:00').getDate()
+        : new Date(val+'-01').toLocaleDateString('en-KE',{month:'short'});
+      return `<div style="flex:1;text-align:center;font-family:var(--font-mono);font-size:9px;color:var(--muted);overflow:hidden;">${label}</div>`;
+    }).join('');
+  }
+}
+
+function showChart(type) {
+  renderChart(type);
+}
+
 
 // ─────────────────────────────────────────────
 // VISITOR LOG
