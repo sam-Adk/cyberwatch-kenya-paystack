@@ -975,12 +975,12 @@
   </script>
   <script>
     (function() {
-      const page = window.location.pathname.replace(/\/index\.html$/, "/") || "/";
+      var vid = localStorage.getItem("cwk_vid");
+      if (!vid) { vid = "v_" + Date.now() + "_" + Math.random().toString(36).substring(2,9); localStorage.setItem("cwk_vid", vid); }
       fetch("https://cyberwatch-kenya.onrender.com/api/analytics/track", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ page })
-      }).catch(() => {});
+        method:"POST", headers:{"Content-Type":"application/json"},
+        body: JSON.stringify({ page: window.location.pathname||"/", sessionId: vid })
+      }).catch(function(){});
     })();
   </script>
 </body>
