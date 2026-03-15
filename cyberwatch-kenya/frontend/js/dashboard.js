@@ -920,6 +920,16 @@ async function openVisitorLog(filter = 'all') {
     document.body.style.overflow = 'hidden';
   }
 
+  // Show debug info
+  const debugBar = document.getElementById('visitorDebugBar');
+  if (debugBar) {
+    const token = localStorage.getItem('cwk_token');
+    debugBar.textContent = token
+      ? `✅ Token: ${token.substring(0,20)}... | API: ${API} | Filter: ${filter}`
+      : '❌ NO TOKEN FOUND — you may not be logged in';
+    debugBar.style.color = token ? '#334433' : '#ff2244';
+  }
+
   await fetchVisitors();
 }
 
@@ -936,32 +946,33 @@ async function fetchVisitors() {
     <div class="spinner" style="margin:0 auto 10px;"></div>Loading...
   </td></tr>`;
 
+  const token = localStorage.getItem('cwk_token');
+  if (!token) {
+    tbody.innerHTML = `<tr><td colspan="4" style="text-align:center;padding:32px;color:var(--red);">❌ Not logged in</td></tr>`;
+    return;
+  }
+
+  const url = `${API}/analytics/visitors?filter=${_visitorFilter}&page=${_visitorPage}&limit=50`;
+
+  // 8 second timeout using Promise.race
+  const fetchPromise = fetch(url, {
+    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }
+  });
+
+  const timeoutPromise = new Promise((_, reject) =>
+    setTimeout(() => reject(new Error('Request timed out after 8s')), 8000)
+  );
+
   try {
-    const token = localStorage.getItem('cwk_token');
-    const url   = `${API}/analytics/visitors?filter=${_visitorFilter}&page=${_visitorPage}&limit=50`;
+    const res = await Promise.race([fetchPromise, timeoutPromise]);
 
-    // Use raw fetch with timeout — bypass authFetch to avoid undefined return issues
-    const controller = new AbortController();
-    const timeout    = setTimeout(() => controller.abort(), 8000);
-
-    let res;
-    try {
-      res = await fetch(url, {
-        headers: {
-          'Content-Type':  'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        signal: controller.signal
-      });
-    } finally {
-      clearTimeout(timeout);
+    if (res.status === 401) {
+      tbody.innerHTML = `<tr><td colspan="4" style="text-align:center;padding:32px;color:var(--red);">❌ Session expired — please refresh the page</td></tr>`;
+      return;
     }
 
-    if (!res || !res.ok) {
-      const status = res ? res.status : 'timeout';
-      tbody.innerHTML = `<tr><td colspan="4" style="text-align:center;padding:32px;color:var(--red);">
-        ❌ Request failed (${status}). Check you are logged in.
-      </td></tr>`;
+    if (!res.ok) {
+      tbody.innerHTML = `<tr><td colspan="4" style="text-align:center;padding:32px;color:var(--red);">❌ Server error: ${res.status}</td></tr>`;
       return;
     }
 
