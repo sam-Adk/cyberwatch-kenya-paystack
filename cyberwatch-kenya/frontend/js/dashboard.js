@@ -756,8 +756,14 @@ function removeImage() {
 
 async function loadAnalytics() {
   try {
-    const res  = await authFetch(`${API}/analytics/stats`);
-    const data = await res.json();
+    // Load stats AND visitors in parallel using authFetch (which we know works)
+    const statsRes    = await authFetch(`${API}/analytics/stats`);
+    const visitorsRes = await authFetch(`${API}/analytics/visitors?filter=all&page=1&limit=100`);
+
+    if (!statsRes || !visitorsRes) return;
+
+    const data         = await statsRes.json();
+    const visitorsData = await visitorsRes.json();
     if (!data.success) return;
 
     const { stats, topPages, dailyStats } = data;
@@ -829,6 +835,53 @@ async function loadAnalytics() {
       const date = new Date(d._id);
       return `<div style="flex:1;text-align:center;font-family:var(--font-mono);font-size:9px;color:var(--muted);">${date.getDate()}/${date.getMonth()+1}</div>`;
     }).join('');
+
+    // Render inline visitor log
+    const vLog = document.getElementById('inlineVisitorLog');
+    if (vLog) {
+      const visitors = visitorsData.visitors || [];
+      if (visitors.length === 0) {
+        vLog.innerHTML = `
+          <div style="text-align:center;padding:40px;color:var(--muted);">
+            <div style="font-size:36px;margin-bottom:12px;">👁️</div>
+            <div style="font-size:14px;">No visits recorded yet.</div>
+            <div style="font-size:12px;margin-top:6px;font-family:var(--font-mono);color:#334433;">
+              Visits appear here once people browse your site.
+            </div>
+          </div>`;
+      } else {
+        vLog.innerHTML = `
+          <table style="width:100%;border-collapse:collapse;">
+            <thead>
+              <tr style="background:#060e06;">
+                <th style="padding:10px 16px;text-align:left;font-family:var(--font-mono);font-size:10px;color:var(--green);letter-spacing:1px;border-bottom:1px solid var(--border);">PAGE</th>
+                <th style="padding:10px 16px;text-align:left;font-family:var(--font-mono);font-size:10px;color:var(--green);letter-spacing:1px;border-bottom:1px solid var(--border);">TIME</th>
+                <th style="padding:10px 16px;text-align:left;font-family:var(--font-mono);font-size:10px;color:var(--green);letter-spacing:1px;border-bottom:1px solid var(--border);">FROM</th>
+                <th style="padding:10px 16px;text-align:left;font-family:var(--font-mono);font-size:10px;color:var(--green);letter-spacing:1px;border-bottom:1px solid var(--border);">DEVICE</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${visitors.map(v => {
+                const pageName = PAGE_NAMES[v.page] || v.page;
+                const device   = detectDevice(v.userAgent);
+                const browser  = detectBrowser(v.userAgent);
+                const time     = timeAgo(v.createdAt);
+                const isRecent = v.createdAt && (Date.now() - new Date(v.createdAt)) < 300000;
+                const referrer = v.referrer ? v.referrer.replace(/https?:\/\/(www\.)?/,'').substring(0,30) : '— Direct';
+                return `<tr onmouseover="this.style.background='rgba(0,255,65,0.03)'" onmouseout="this.style.background=''" style="border-bottom:1px solid rgba(255,255,255,0.04);">
+                  <td style="padding:10px 16px;font-size:13px;color:#fff;">${pageName}</td>
+                  <td style="padding:10px 16px;font-size:11px;color:${isRecent?'#00ff41':'var(--muted)'};font-family:var(--font-mono);">${time}</td>
+                  <td style="padding:10px 16px;font-size:11px;color:var(--muted);" title="${v.referrer||'Direct'}">${referrer}</td>
+                  <td style="padding:10px 16px;font-size:11px;color:var(--muted);">${device} · ${browser}</td>
+                </tr>`;
+              }).join('')}
+            </tbody>
+          </table>
+          <div style="padding:12px 16px;border-top:1px solid var(--border);font-family:var(--font-mono);font-size:11px;color:#334433;">
+            ${visitorsData.total || visitors.length} total visits recorded
+          </div>`;
+      }
+    }
 
   } catch (err) {
     console.error('Analytics error:', err);
