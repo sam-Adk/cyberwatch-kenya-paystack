@@ -89,6 +89,7 @@ router.post('/report-scam', [
     if (!errors.isEmpty()) return res.status(400).json({ success: false, errors: errors.array() });
 
     const { reporterName, reporterEmail, scamType, description, amountLost, platform, county } = req.body;
+    console.log('Scam report received - county:', JSON.stringify(county), '| full body keys:', Object.keys(req.body));
     const report = await ScamReport.create({ reporterName, reporterEmail, scamType, description, amountLost, platform, county: county || null });
     notifyNewReport(report).catch(e => console.error('Report notify error:', e.message));
     res.status(201).json({ success: true, message: '✅ Thank you for your report! Our team will review it shortly.' });
@@ -120,6 +121,7 @@ router.get('/reports/map-data', async (req, res) => {
       { $group: { _id: null, total: { $sum: '$amountLost' } } }
     ]);
 
+    console.log('Map data counties:', JSON.stringify(countyData));
     res.json({
       success: true,
       counties: countyData,
