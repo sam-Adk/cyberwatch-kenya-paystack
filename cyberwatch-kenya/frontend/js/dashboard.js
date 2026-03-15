@@ -111,6 +111,7 @@ function showTab(name, linkEl) {
   if (name === 'subscribers') loadSubscribers();
   if (name === 'reports')     loadReports();
   if (name === 'overview')    loadDashboardStats();
+  if (name === 'analytics')   loadAnalytics();
 }
 
 // ─────────────────────────────────────────────
@@ -747,6 +748,91 @@ function removeImage() {
   document.getElementById('imageUploadSpinner').classList.add('hidden');
   document.getElementById('imageUploadArea').style.borderColor = '';
   document.getElementById('imageFileInput').value = '';
+}
+
+// ─────────────────────────────────────────────
+// ANALYTICS
+// ─────────────────────────────────────────────
+
+async function loadAnalytics() {
+  try {
+    const res  = await authFetch(`${API}/analytics/stats`);
+    const data = await res.json();
+    if (!data.success) return;
+
+    const { stats, topPages, dailyStats } = data;
+
+    // Update stat cards
+    document.getElementById('statTotalViews').textContent  = (stats.totalViews  || 0).toLocaleString();
+    document.getElementById('statTodayViews').textContent  = (stats.todayViews  || 0).toLocaleString();
+    document.getElementById('statWeekViews').textContent   = (stats.weekViews   || 0).toLocaleString();
+    document.getElementById('statMonthViews').textContent  = (stats.monthViews  || 0).toLocaleString();
+
+    const updated = document.getElementById('analyticsUpdated');
+    if (updated) updated.textContent = 'Updated ' + new Date().toLocaleTimeString('en-KE');
+
+    // Top pages
+    const pageNames = {
+      '/':            '🏠 Homepage',
+      '/index.html':  '🏠 Homepage',
+      '/about.html':  '👤 About',
+      '/pricing.html':'💰 Pricing',
+      '/scam-map.html':'🗺️ Scam Map',
+      '/subscribe.html':'📧 Subscribe',
+      '/login.html':  '🔑 Login',
+    };
+
+    const topList = document.getElementById('topPagesList');
+    if (topPages.length === 0) {
+      topList.innerHTML = '<div style="text-align:center;padding:20px;color:var(--muted);">No visits tracked yet</div>';
+    } else {
+      const maxViews = topPages[0].count;
+      topList.innerHTML = topPages.map((p, i) => {
+        const name = pageNames[p._id] || p._id;
+        const pct  = Math.round((p.count / maxViews) * 100);
+        return `
+          <div style="margin-bottom:14px;">
+            <div style="display:flex;justify-content:space-between;margin-bottom:5px;">
+              <span style="font-size:13px;color:#ccc;">${name}</span>
+              <span style="font-family:var(--font-mono);font-size:12px;color:var(--green);">${p.count.toLocaleString()}</span>
+            </div>
+            <div style="height:4px;background:var(--surface2);border-radius:2px;overflow:hidden;">
+              <div style="width:${pct}%;height:100%;background:linear-gradient(90deg,#00ff41,#00cc33);border-radius:2px;transition:width 0.8s ease;"></div>
+            </div>
+          </div>`;
+      }).join('');
+    }
+
+    // Daily chart
+    const chartEl  = document.getElementById('dailyChart');
+    const labelsEl = document.getElementById('dailyChartLabels');
+
+    if (dailyStats.length === 0) {
+      chartEl.innerHTML = '<div style="text-align:center;width:100%;padding:40px 0;color:var(--muted);">No data yet</div>';
+      return;
+    }
+
+    const maxDay = Math.max(...dailyStats.map(d => d.count));
+
+    chartEl.innerHTML = dailyStats.map(d => {
+      const height = maxDay > 0 ? Math.max(4, Math.round((d.count / maxDay) * 180)) : 4;
+      const date   = new Date(d._id);
+      const isToday = d._id === new Date().toISOString().slice(0,10);
+      return `
+        <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;cursor:default;" title="${d._id}: ${d.count} views">
+          <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted);">${d.count > 0 ? d.count : ''}</span>
+          <div style="width:100%;height:${height}px;background:${isToday ? '#00ff41' : 'rgba(0,255,65,0.3)'};border-radius:2px 2px 0 0;transition:height 0.8s ease;"></div>
+        </div>`;
+    }).join('');
+
+    labelsEl.innerHTML = dailyStats.map(d => {
+      const date = new Date(d._id);
+      return `<div style="flex:1;text-align:center;font-family:var(--font-mono);font-size:9px;color:var(--muted);">${date.getDate()}/${date.getMonth()+1}</div>`;
+    }).join('');
+
+  } catch (err) {
+    console.error('Analytics error:', err);
+  }
 }
 
 // ─────────────────────────────────────────────
