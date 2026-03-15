@@ -85,4 +85,35 @@ router.get('/stats', protect, async (req, res) => {
   }
 });
 
+// ── ADMIN: GET VISITOR LOG ──────────────────
+// GET /api/analytics/visitors?page=1&limit=50&filter=all
+router.get('/visitors', protect, async (req, res) => {
+  try {
+    const page   = parseInt(req.query.page)   || 1;
+    const limit  = parseInt(req.query.limit)  || 50;
+    const filter = req.query.filter || 'all'; // all, today, week
+    const skip   = (page - 1) * limit;
+
+    const now   = new Date();
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const week  = new Date(today); week.setDate(week.getDate() - 7);
+
+    let match = {};
+    if (filter === 'today') match.createdAt = { $gte: today };
+    if (filter === 'week')  match.createdAt = { $gte: week };
+
+    const [visitors, total] = await Promise.all([
+      PageView.find(match)
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit),
+      PageView.countDocuments(match)
+    ]);
+
+    res.json({ success: true, visitors, total, page, pages: Math.ceil(total / limit) });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+});
+
 module.exports = router;
