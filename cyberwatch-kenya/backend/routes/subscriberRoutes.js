@@ -10,6 +10,7 @@ const Subscriber = require('../models/Subscriber');
 const ScamReport = require('../models/ScamReport');
 const { protect } = require('../middleware/authMiddleware');
 const Subscription = require('../models/Subscription');
+const { notifyNewSubscriber, notifyNewReport } = require('../utils/notifyAdmin');
 
 // ── PUBLIC: SUBSCRIBE ──────────────────────────
 router.post('/subscribe', [
@@ -57,6 +58,7 @@ router.post('/subscribe', [
     const phone = req.body.phone || null;
     const subscriber = await Subscriber.create({ name, email, plan: 'free', phone });
     sendFreeWelcomeEmail(subscriber).catch(e => console.error('Welcome email error:', e.message));
+    notifyNewSubscriber(subscriber).catch(e => console.error('Admin notify error:', e.message));
     res.status(201).json({ success: true, message: '✅ Successfully subscribed!' });
   } catch (error) {
     res.status(500).json({ success: false, message: 'Server error. Please try again.' });
@@ -87,7 +89,8 @@ router.post('/report-scam', [
     if (!errors.isEmpty()) return res.status(400).json({ success: false, errors: errors.array() });
 
     const { reporterName, reporterEmail, scamType, description, amountLost, platform, county } = req.body;
-    await ScamReport.create({ reporterName, reporterEmail, scamType, description, amountLost, platform, county: county || null });
+    const report = await ScamReport.create({ reporterName, reporterEmail, scamType, description, amountLost, platform, county: county || null });
+    notifyNewReport(report).catch(e => console.error('Report notify error:', e.message));
     res.status(201).json({ success: true, message: '✅ Thank you for your report! Our team will review it shortly.' });
   } catch (error) {
     res.status(500).json({ success: false, message: 'Server error' });
