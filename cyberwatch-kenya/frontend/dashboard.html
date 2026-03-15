@@ -105,6 +105,7 @@
           <button class="btn btn-primary" onclick="showTab('newpost', null)">✏️ Write New Post</button>
           <button class="btn btn-outline" onclick="showTab('subscribers', null)">👥 View Subscribers</button>
           <button class="btn btn-outline" onclick="showTab('reports', null)">🚨 Review Reports</button>
+          <button class="btn btn-outline" onclick="showTab('analytics', null)" style="border-color:#9966ff;color:#9966ff;">👁️ View Analytics</button>
           <button class="btn btn-outline" onclick="sendTestDigest()" style="border-color:#00ccff;color:#00ccff;">⭐ Send Weekly Digest Now</button>
           <button class="btn btn-outline" onclick="openTestSMS()" style="border-color:#00ff41;color:#00ff41;">📱 Test SMS</button>
         </div>
@@ -245,6 +246,64 @@
           <button class="btn btn-primary" id="savePostBtn" onclick="savePost()">💾 Save Post</button>
           <button class="btn btn-outline" onclick="clearPostForm()">Clear Form</button>
         </div>
+      </div>
+    </div>
+
+    <!-- ANALYTICS TAB -->
+    <div class="tab-panel" id="tab-analytics">
+      <div class="dash-header">
+        <h1 class="dash-title">Site Analytics</h1>
+        <span id="analyticsUpdated" class="text-muted font-mono" style="font-size:12px;"></span>
+      </div>
+
+      <!-- Visit Stats Cards -->
+      <div class="stats-grid" style="margin-bottom:28px;">
+        <div class="stat-card">
+          <div class="stat-icon">👁️</div>
+          <div class="stat-number" id="statTotalViews">—</div>
+          <div class="stat-label">Total Page Views</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">📅</div>
+          <div class="stat-number" id="statTodayViews">—</div>
+          <div class="stat-label">Views Today</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">📆</div>
+          <div class="stat-number" id="statWeekViews">—</div>
+          <div class="stat-label">This Week</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">🗓️</div>
+          <div class="stat-number" id="statMonthViews">—</div>
+          <div class="stat-label">This Month</div>
+        </div>
+      </div>
+
+      <!-- Top Pages + Daily Chart -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
+
+        <!-- Top Pages -->
+        <div class="card">
+          <h3 style="font-family:var(--font-mono);font-size:13px;color:var(--green);letter-spacing:1px;margin:0 0 20px;">// TOP PAGES</h3>
+          <div id="topPagesList">
+            <div style="text-align:center;padding:20px;color:var(--muted);">
+              <div class="spinner" style="margin:0 auto 10px;"></div>Loading...
+            </div>
+          </div>
+        </div>
+
+        <!-- Daily Visits Chart -->
+        <div class="card">
+          <h3 style="font-family:var(--font-mono);font-size:13px;color:var(--green);letter-spacing:1px;margin:0 0 20px;">// DAILY VISITS (14 DAYS)</h3>
+          <div id="dailyChart" style="height:200px;display:flex;align-items:flex-end;gap:4px;padding:0 4px;">
+            <div style="text-align:center;width:100%;padding:40px 0;color:var(--muted);">
+              <div class="spinner" style="margin:0 auto 10px;"></div>Loading...
+            </div>
+          </div>
+          <div id="dailyChartLabels" style="display:flex;gap:4px;padding:6px 4px 0;"></div>
+        </div>
+
       </div>
     </div>
 
