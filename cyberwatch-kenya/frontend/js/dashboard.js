@@ -836,6 +836,332 @@ async function loadAnalytics() {
 }
 
 // ─────────────────────────────────────────────
+// VISITOR LOG
+// ─────────────────────────────────────────────
+
+let _visitorFilter = 'all';
+let _visitorPage   = 1;
+let _visitorTotal  = 0;
+let _visitorPages  = 1;
+
+const PAGE_NAMES = {
+  '/':             '🏠 Homepage',
+  '/index.html':   '🏠 Homepage',
+  '/about.html':   '👤 About',
+  '/pricing.html': '💰 Pricing',
+  '/scam-map.html':'🗺️ Scam Map',
+  '/subscribe.html':'📧 Subscribe',
+  '/login.html':   '🔑 Login',
+};
+
+const DEVICE_ICONS = {
+  mobile:  '📱',
+  tablet:  '📱',
+  desktop: '🖥️',
+};
+
+function detectDevice(ua) {
+  if (!ua) return '🖥️ Desktop';
+  if (/iPhone|Android.*Mobile|Mobile/i.test(ua)) return '📱 Mobile';
+  if (/iPad|Tablet|Android(?!.*Mobile)/i.test(ua)) return '📱 Tablet';
+  return '🖥️ Desktop';
+}
+
+function detectBrowser(ua) {
+  if (!ua) return 'Unknown';
+  if (/Chrome/i.test(ua) && !/Edg/i.test(ua)) return 'Chrome';
+  if (/Firefox/i.test(ua)) return 'Firefox';
+  if (/Safari/i.test(ua) && !/Chrome/i.test(ua)) return 'Safari';
+  if (/Edg/i.test(ua)) return 'Edge';
+  if (/MSIE|Trident/i.test(ua)) return 'IE';
+  return 'Browser';
+}
+
+function timeAgo(dateStr) {
+  const diff = Date.now() - new Date(dateStr).getTime();
+  const mins  = Math.floor(diff / 60000);
+  const hours = Math.floor(diff / 3600000);
+  const days  = Math.floor(diff / 86400000);
+  if (mins < 1)   return '🟢 Just now';
+  if (mins < 60)  return `${mins}m ago`;
+  if (hours < 24) return `${hours}h ago`;
+  return new Date(dateStr).toLocaleDateString('en-KE', { day:'numeric', month:'short', hour:'2-digit', minute:'2-digit' });
+}
+
+async function openVisitorLog(filter = 'all') {
+  // Map 'month' to 'all' since backend only supports all/today/week
+  if (filter === 'month') filter = 'all';
+
+  _visitorFilter = filter;
+  _visitorPage   = 1;
+
+  // Update active filter buttons safely
+  ['all','today','week'].forEach(f => {
+    const btn = document.getElementById(`vFilter-${f}`);
+    if (!btn) return;
+    if (f === filter) {
+      btn.style.borderColor = 'var(--green)';
+      btn.style.color = 'var(--green)';
+      btn.style.background = 'rgba(0,255,65,0.08)';
+    } else {
+      btn.style.borderColor = '';
+      btn.style.color = '';
+      btn.style.background = '';
+    }
+  });
+
+  const labels = { all: 'All Time', today: 'Today', week: 'This Week' };
+  const subtitle = document.getElementById('visitorLogSubtitle');
+  if (subtitle) subtitle.textContent = `Showing: ${labels[filter] || 'All Time'}`;
+
+  const modal = document.getElementById('visitorLogModal');
+  if (modal) {
+    modal.classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+  }
+
+  await fetchVisitors();
+}
+
+function closeVisitorLog() {
+  document.getElementById('visitorLogModal').classList.add('hidden');
+  document.body.style.overflow = '';
+}
+
+async function fetchVisitors() {
+  const tbody = document.getElementById('visitorTableBody');
+  tbody.innerHTML = `<tr><td colspan="4" style="text-align:center;padding:40px;color:var(--muted);">
+    <div class="spinner" style="margin:0 auto 10px;"></div>Loading...
+  </td></tr>`;
+
+  try {
+    const res  = await authFetch(`${API}/analytics/visitors?filter=${_visitorFilter}&page=${_visitorPage}&limit=50`);
+    const data = await res.json();
+
+    if (!data.success || data.visitors.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="4" style="text-align:center;padding:40px;color:var(--muted);">
+        No visitors found for this period.
+      </td></tr>`;
+      document.getElementById('visitorCount').textContent = '0 visits';
+      document.getElementById('visitorPageInfo').textContent = '';
+      document.getElementById('vPrevBtn').disabled = true;
+      document.getElementById('vNextBtn').disabled = true;
+      return;
+    }
+
+    _visitorTotal = data.total;
+    _visitorPages = data.pages;
+
+    tbody.innerHTML = data.visitors.map(v => {
+      const pageName = PAGE_NAMES[v.page] || v.page;
+      const device   = detectDevice(v.userAgent);
+      const browser  = detectBrowser(v.userAgent);
+      const time     = timeAgo(v.createdAt);
+      const referrer = v.referrer
+        ? v.referrer.replace(/https?:\/\/(www\.)?/, '').substring(0, 30)
+        : 'Direct visit';
+
+      const timeColor = v.createdAt && (Date.now() - new Date(v.createdAt)) < 300000
+        ? '#00ff41' : 'var(--muted)';
+
+      return `<tr style="border-bottom:1px solid rgba(255,255,255,0.04);transition:background 0.15s;" 
+                  onmouseover="this.style.background='rgba(0,255,65,0.03)'"
+                  onmouseout="this.style.background=''">
+        <td style="padding:12px 16px;font-size:13px;color:#fff;font-weight:500;">${pageName}</td>
+        <td style="padding:12px 16px;font-size:12px;color:${timeColor};font-family:var(--font-mono);">${time}</td>
+        <td style="padding:12px 16px;font-size:12px;color:var(--muted);" title="${v.referrer || 'Direct'}">${referrer}</td>
+        <td style="padding:12px 16px;font-size:12px;color:var(--muted);">${device} · ${browser}</td>
+      </tr>`;
+    }).join('');
+
+    document.getElementById('visitorCount').textContent =
+      `${_visitorTotal.toLocaleString()} total visit${_visitorTotal !== 1 ? 's' : ''}`;
+    document.getElementById('visitorPageInfo').textContent =
+      `Page ${_visitorPage} of ${_visitorPages}`;
+    document.getElementById('vPrevBtn').disabled = _visitorPage <= 1;
+    document.getElementById('vNextBtn').disabled = _visitorPage >= _visitorPages;
+
+  } catch (err) {
+    tbody.innerHTML = `<tr><td colspan="4" style="text-align:center;padding:40px;color:var(--red);">
+      ❌ Failed to load visitors
+    </td></tr>`;
+  }
+}
+
+async function changeVisitorPage(dir) {
+  const newPage = _visitorPage + dir;
+  if (newPage < 1 || newPage > _visitorPages) return;
+  _visitorPage = newPage;
+  await fetchVisitors();
+}
+
+// ─────────────────────────────────────────────
+// VISITORS MODAL
+// ─────────────────────────────────────────────
+
+let _visitorsFilter = 'all';
+let _visitorsPage   = 1;
+
+const PAGE_LABELS = {
+  '/':             '🏠 Homepage',
+  '/index.html':   '🏠 Homepage',
+  '/about.html':   '👤 About',
+  '/pricing.html': '💰 Pricing',
+  '/scam-map.html':'🗺️ Scam Map',
+  '/subscribe.html':'📧 Subscribe',
+  '/login.html':   '🔑 Login',
+  '/dashboard.html':'⚙️ Dashboard',
+};
+
+const DEVICE_ICON = (ua) => {
+  if (!ua) return '🖥️';
+  if (/mobile|android|iphone/i.test(ua)) return '📱';
+  if (/tablet|ipad/i.test(ua)) return '📟';
+  return '🖥️';
+};
+
+const BROWSER_NAME = (ua) => {
+  if (!ua) return 'Unknown';
+  if (/Chrome\//.test(ua) && !/Edg\//.test(ua)) return 'Chrome';
+  if (/Firefox\//.test(ua)) return 'Firefox';
+  if (/Safari\//.test(ua) && !/Chrome/.test(ua)) return 'Safari';
+  if (/Edg\//.test(ua)) return 'Edge';
+  if (/OPR\//.test(ua)) return 'Opera';
+  return 'Browser';
+};
+
+function openVisitorsModal(filter = 'all') {
+  _visitorsFilter = filter;
+  _visitorsPage   = 1;
+  document.getElementById('visitorsModal').classList.remove('hidden');
+  document.body.style.overflow = 'hidden';
+  fetchVisitors();
+}
+
+function closeVisitorsModal() {
+  document.getElementById('visitorsModal').classList.add('hidden');
+  document.body.style.overflow = '';
+}
+
+function filterVisitors(filter) {
+  _visitorsFilter = filter;
+  _visitorsPage   = 1;
+  // Update tab styles
+  ['all','today','week'].forEach(f => {
+    const btn = document.getElementById(`vf${f.charAt(0).toUpperCase() + f.slice(1)}`);
+    if (btn) {
+      btn.style.background = f === filter ? 'var(--green)' : 'transparent';
+      btn.style.color      = f === filter ? '#000' : 'var(--muted)';
+      btn.style.fontWeight = f === filter ? '700' : '400';
+    }
+  });
+  fetchVisitors();
+}
+
+async function fetchVisitors() {
+  const wrap = document.getElementById('visitorsListWrap');
+  wrap.innerHTML = '<div style="text-align:center;padding:40px;color:var(--muted);"><div class="spinner" style="margin:0 auto 12px;"></div>Loading...</div>';
+
+  try {
+    const res  = await authFetch(`${API}/analytics/visitors?filter=${_visitorsFilter}&page=${_visitorsPage}&limit=30`);
+    const data = await res.json();
+
+    if (!data.success || data.visitors.length === 0) {
+      wrap.innerHTML = `<div style="text-align:center;padding:40px;color:var(--muted);">
+        <div style="font-size:40px;margin-bottom:12px;">👁️</div>
+        No visitors found for this period.
+      </div>`;
+      document.getElementById('visitorsPagination').innerHTML = '';
+      return;
+    }
+
+    // Update subtitle
+    const filterLabel = { all: 'All Time', today: 'Today', week: 'This Week' }[_visitorsFilter];
+    document.getElementById('visitorsModalSubtitle').textContent =
+      `${data.total.toLocaleString()} visits — ${filterLabel} — Page ${data.page} of ${data.pages}`;
+
+    // Build visitor rows
+    wrap.innerHTML = `
+      <table style="width:100%;border-collapse:collapse;">
+        <thead>
+          <tr style="background:var(--surface2);">
+            <th style="padding:10px 16px;text-align:left;font-family:var(--font-mono);font-size:10px;color:var(--muted);letter-spacing:1px;border-bottom:1px solid var(--border);">PAGE</th>
+            <th style="padding:10px 16px;text-align:left;font-family:var(--font-mono);font-size:10px;color:var(--muted);letter-spacing:1px;border-bottom:1px solid var(--border);">DEVICE</th>
+            <th style="padding:10px 16px;text-align:left;font-family:var(--font-mono);font-size:10px;color:var(--muted);letter-spacing:1px;border-bottom:1px solid var(--border);">REFERRER</th>
+            <th style="padding:10px 16px;text-align:right;font-family:var(--font-mono);font-size:10px;color:var(--muted);letter-spacing:1px;border-bottom:1px solid var(--border);">TIME</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${data.visitors.map(v => {
+            const pageLabel = PAGE_LABELS[v.page] || v.page;
+            const device    = DEVICE_ICON(v.userAgent);
+            const browser   = BROWSER_NAME(v.userAgent);
+            const referrer  = v.referrer
+              ? v.referrer.replace(/https?:\/\/(www\.)?/, '').split('/')[0].substring(0, 30)
+              : 'Direct';
+            const time = new Date(v.createdAt).toLocaleString('en-KE', {
+              day: 'numeric', month: 'short',
+              hour: '2-digit', minute: '2-digit'
+            });
+            const isNew = (Date.now() - new Date(v.createdAt)) < 3600000; // last 1hr
+
+            return `
+              <tr style="border-bottom:1px solid rgba(255,255,255,0.04);transition:background 0.15s;" onmouseover="this.style.background='rgba(0,255,65,0.03)'" onmouseout="this.style.background='transparent'">
+                <td style="padding:12px 16px;">
+                  <div style="display:flex;align-items:center;gap:8px;">
+                    ${isNew ? '<span style="width:6px;height:6px;background:#00ff41;border-radius:50%;flex-shrink:0;animation:pulse 1.5s infinite;"></span>' : ''}
+                    <span style="font-size:13px;color:#ddd;">${pageLabel}</span>
+                  </div>
+                </td>
+                <td style="padding:12px 16px;">
+                  <span style="font-size:16px;">${device}</span>
+                  <span style="font-size:12px;color:var(--muted);margin-left:4px;">${browser}</span>
+                </td>
+                <td style="padding:12px 16px;">
+                  <span style="font-size:12px;color:var(--muted);font-family:var(--font-mono);">${escapeHTML(referrer)}</span>
+                </td>
+                <td style="padding:12px 16px;text-align:right;">
+                  <span style="font-size:11px;color:var(--muted);font-family:var(--font-mono);">${time}</span>
+                </td>
+              </tr>`;
+          }).join('')}
+        </tbody>
+      </table>`;
+
+    // Pagination
+    const paginEl = document.getElementById('visitorsPagination');
+    if (data.pages > 1) {
+      paginEl.innerHTML = `
+        <span style="font-size:12px;color:var(--muted);">
+          Showing ${((data.page-1)*30)+1}–${Math.min(data.page*30, data.total)} of ${data.total.toLocaleString()} visits
+        </span>
+        <div style="display:flex;gap:8px;">
+          <button onclick="changeVisitorsPage(${data.page - 1})"
+            style="padding:6px 14px;border:1px solid var(--border);background:none;color:${data.page > 1 ? '#fff' : 'var(--muted)'};border-radius:6px;cursor:${data.page > 1 ? 'pointer' : 'default'};font-size:12px;"
+            ${data.page <= 1 ? 'disabled' : ''}>← Prev</button>
+          <span style="padding:6px 14px;font-size:12px;color:var(--muted);font-family:var(--font-mono);">
+            ${data.page} / ${data.pages}
+          </span>
+          <button onclick="changeVisitorsPage(${data.page + 1})"
+            style="padding:6px 14px;border:1px solid var(--border);background:none;color:${data.page < data.pages ? '#fff' : 'var(--muted)'};border-radius:6px;cursor:${data.page < data.pages ? 'pointer' : 'default'};font-size:12px;"
+            ${data.page >= data.pages ? 'disabled' : ''}>Next →</button>
+        </div>`;
+    } else {
+      paginEl.innerHTML = `<span style="font-size:12px;color:var(--muted);">${data.total.toLocaleString()} total visits</span>`;
+    }
+
+  } catch (err) {
+    wrap.innerHTML = '<div style="text-align:center;padding:40px;color:var(--red);">❌ Failed to load visitors</div>';
+    console.error('Visitors error:', err);
+  }
+}
+
+function changeVisitorsPage(page) {
+  _visitorsPage = page;
+  fetchVisitors();
+}
+
+// ─────────────────────────────────────────────
 // TEST SMS
 // ─────────────────────────────────────────────
 
