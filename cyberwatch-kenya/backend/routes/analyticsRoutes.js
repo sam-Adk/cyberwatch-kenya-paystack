@@ -1,130 +1,101 @@
-/**
- * routes/analyticsRoutes.js
- * Tracks page views and returns visit stats for admin dashboard
- */
-
 const express  = require('express');
 const router   = express.Router();
 const PageView = require('../models/PageView');
 const { protect } = require('../middleware/authMiddleware');
 
-// ── PUBLIC: TRACK A PAGE VIEW ────────────────
-// POST /api/analytics/track
+// ── PUBLIC: TRACK VISIT ───────────────────────
 router.post('/track', async (req, res) => {
   try {
-    const { page } = req.body;
-    if (!page) return res.status(400).json({ success: false });
+    const { sessionId } = req.body;
+    if (!sessionId) return res.json({ success: true });
 
-    // Get real IP (works behind proxies/Render)
-    const ip = req.headers['x-forwarded-for']?.split(',')[0]
-            || req.socket?.remoteAddress
-            || 'unknown';
-
-    // Don't track admin/bot visits
     const ua = req.headers['user-agent'] || '';
-    if (ua.includes('bot') || ua.includes('crawler') || ua.includes('spider')) {
-      return res.json({ success: true });
-    }
+    if (/bot|crawler|spider|googlebot|bingbot/i.test(ua)) return res.json({ success: true });
 
-    await PageView.create({
-      page,
-      userAgent: ua.substring(0, 200),
-      ip: ip.substring(0, 50),
-      referrer: (req.headers.referer || '').substring(0, 200)
-    });
+    const ip = (req.headers['x-forwarded-for'] || '').split(',')[0].trim() || 'unknown';
+
+    // One record per sessionId per day — if already recorded today, skip
+    const todayStart = new Date();
+    todayStart.setHours(0, 0, 0, 0);
+
+    const alreadyTracked = await PageView.findOne({
+      sessionId,
+      createdAt: { $gte: todayStart }
+    }).lean();
+
+    if (!alreadyTracked) {
+      await PageView.create({
+        sessionId,
+        page:      (req.body.page || '/').split('?')[0].split('#')[0] || '/',
+        pages:     [],
+        userAgent: ua.substring(0, 200),
+        ip:        ip.substring(0, 50),
+        referrer:  (req.headers.referer || '').substring(0, 200)
+      });
+    }
 
     res.json({ success: true });
   } catch (err) {
-    res.status(500).json({ success: false });
+    res.json({ success: true });
   }
 });
 
-// ── ADMIN: GET VISIT STATS ───────────────────
-// GET /api/analytics/stats
+// ── ADMIN: STATS ──────────────────────────────
 router.get('/stats', protect, async (req, res) => {
   try {
-    const now   = new Date();
-    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-    const week  = new Date(today); week.setDate(week.getDate() - 7);
-    const month = new Date(today); month.setDate(month.getDate() - 30);
+    const now    = new Date();
+    const today  = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const week   = new Date(today); week.setDate(today.getDate() - 7);
+    const month  = new Date(now.getFullYear(), now.getMonth(), 1);
+    const year   = new Date(now.getFullYear(), 0, 1);
+    const last14 = new Date(today); last14.setDate(today.getDate() - 14);
 
-    const [totalViews, todayViews, weekViews, monthViews, topPages, dailyStats] = await Promise.all([
-      // Total all time
-      PageView.countDocuments().maxTimeMS(5000),
-      // Today
-      PageView.countDocuments({ createdAt: { $gte: today } }).maxTimeMS(5000),
-      // Last 7 days
-      PageView.countDocuments({ createdAt: { $gte: week } }).maxTimeMS(5000),
-      // Last 30 days
-      PageView.countDocuments({ createdAt: { $gte: month } }).maxTimeMS(5000),
-      // Top pages
+    const [total, todayV, weekV, monthV, yearV, topPages, daily14, monthly12, recent] = await Promise.all([
+      PageView.countDocuments(),
+      PageView.countDocuments({ createdAt: { $gte: today } }),
+      PageView.countDocuments({ createdAt: { $gte: week } }),
+      PageView.countDocuments({ createdAt: { $gte: month } }),
+      PageView.countDocuments({ createdAt: { $gte: year } }),
       PageView.aggregate([
         { $group: { _id: '$page', count: { $sum: 1 } } },
-        { $sort: { count: -1 } },
-        { $limit: 8 }
+        { $sort: { count: -1 } }, { $limit: 6 }
       ]),
-      // Daily visits last 14 days
       PageView.aggregate([
-        { $match: { createdAt: { $gte: new Date(today - 14 * 24 * 60 * 60 * 1000) } } },
-        { $group: {
-          _id: { $dateToString: { format: '%Y-%m-%d', date: '$createdAt' } },
-          count: { $sum: 1 }
-        }},
+        { $match: { createdAt: { $gte: last14 } } },
+        { $group: { _id: { $dateToString: { format: '%Y-%m-%d', date: '$createdAt', timezone: 'Africa/Nairobi' } }, count: { $sum: 1 } } },
         { $sort: { _id: 1 } }
-      ])
+      ]),
+      PageView.aggregate([
+        { $match: { createdAt: { $gte: new Date(now.getFullYear() - 1, now.getMonth(), 1) } } },
+        { $group: { _id: { $dateToString: { format: '%Y-%m', date: '$createdAt', timezone: 'Africa/Nairobi' } }, count: { $sum: 1 } } },
+        { $sort: { _id: 1 } }
+      ]),
+      PageView.find().sort({ createdAt: -1 }).limit(50).lean()
     ]);
+
+    // Fill gaps in daily chart
+    const dailyFilled = [];
+    for (let i = 13; i >= 0; i--) {
+      const d = new Date(today); d.setDate(d.getDate() - i);
+      const key = d.toISOString().slice(0, 10);
+      dailyFilled.push({ date: key, count: (daily14.find(x => x._id === key) || {}).count || 0 });
+    }
+
+    // Fill gaps in monthly chart
+    const monthlyFilled = [];
+    for (let i = 11; i >= 0; i--) {
+      const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      const key = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
+      monthlyFilled.push({ month: key, count: (monthly12.find(x => x._id === key) || {}).count || 0 });
+    }
 
     res.json({
       success: true,
-      stats: { totalViews, todayViews, weekViews, monthViews },
-      topPages,
-      dailyStats
+      stats:   { totalViews: total, todayViews: todayV, weekViews: weekV, monthViews: monthV, yearViews: yearV },
+      topPages, daily: dailyFilled, monthly: monthlyFilled, visitors: recent
     });
   } catch (err) {
-    console.error('Analytics stats error:', err.message);
-    res.json({ success: true, stats: { totalViews:0, todayViews:0, weekViews:0, monthViews:0 }, topPages: [], dailyStats: [] });
-  }
-});
-
-// ── ADMIN: GET VISITOR LOG ──────────────────
-// GET /api/analytics/visitors?page=1&limit=50&filter=all
-router.get('/visitors', protect, async (req, res) => {
-  try {
-    const page   = parseInt(req.query.page)   || 1;
-    const limit  = parseInt(req.query.limit)  || 50;
-    const filter = req.query.filter || 'all';
-    const skip   = (page - 1) * limit;
-
-    const now   = new Date();
-    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-    const week  = new Date(today); week.setDate(week.getDate() - 7);
-
-    let match = {};
-    if (filter === 'today') match.createdAt = { $gte: today };
-    if (filter === 'week')  match.createdAt = { $gte: week };
-
-    // Use lean() for speed + maxTimeMS to prevent hanging
-    const [visitors, total] = await Promise.all([
-      PageView.find(match)
-        .sort({ createdAt: -1 })
-        .skip(skip)
-        .limit(limit)
-        .lean()
-        .maxTimeMS(5000),
-      PageView.countDocuments(match).maxTimeMS(5000)
-    ]);
-
-    res.json({
-      success: true,
-      visitors: visitors || [],
-      total:    total    || 0,
-      page,
-      pages: Math.ceil((total || 0) / limit) || 1
-    });
-  } catch (err) {
-    console.error('Visitors endpoint error:', err.message);
-    // Return empty instead of hanging
-    res.json({ success: true, visitors: [], total: 0, page: 1, pages: 1 });
+    res.json({ success: true, stats: { totalViews:0,todayViews:0,weekViews:0,monthViews:0,yearViews:0 }, topPages:[], daily:[], monthly:[], visitors:[] });
   }
 });
 
