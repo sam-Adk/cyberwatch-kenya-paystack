@@ -258,29 +258,29 @@
 
       <!-- Visit Stats Cards -->
       <div class="stats-grid" style="margin-bottom:28px;">
-        <div class="stat-card" onclick="openVisitorLog('all')" style="cursor:pointer;" title="Click to see all visitors">
+        <div class="stat-card" onclick="openVisitorLog('all')" style="cursor:pointer;position:relative;transition:border-color 0.2s;" onmouseover="this.style.borderColor='var(--green)'" onmouseout="this.style.borderColor=''">
+          <div style="position:absolute;top:10px;right:10px;font-size:10px;background:rgba(0,255,65,0.1);border:1px solid rgba(0,255,65,0.2);border-radius:6px;padding:2px 6px;font-family:var(--font-mono);color:var(--green);">👁</div>
           <div class="stat-icon">👁️</div>
           <div class="stat-number" id="statTotalViews">—</div>
           <div class="stat-label">Total Page Views</div>
-          <div style="font-size:10px;color:var(--green);font-family:var(--font-mono);margin-top:4px;">tap to view →</div>
         </div>
-        <div class="stat-card" onclick="openVisitorLog('today')" style="cursor:pointer;" title="Click to see today's visitors">
+        <div class="stat-card" onclick="openVisitorLog('today')" style="cursor:pointer;position:relative;transition:border-color 0.2s;" onmouseover="this.style.borderColor='var(--green)'" onmouseout="this.style.borderColor=''">
+          <div style="position:absolute;top:10px;right:10px;font-size:10px;background:rgba(0,255,65,0.1);border:1px solid rgba(0,255,65,0.2);border-radius:6px;padding:2px 6px;font-family:var(--font-mono);color:var(--green);">👁</div>
           <div class="stat-icon">📅</div>
           <div class="stat-number" id="statTodayViews">—</div>
           <div class="stat-label">Views Today</div>
-          <div style="font-size:10px;color:var(--green);font-family:var(--font-mono);margin-top:4px;">tap to view →</div>
         </div>
-        <div class="stat-card" onclick="openVisitorLog('week')" style="cursor:pointer;" title="Click to see this week's visitors">
+        <div class="stat-card" onclick="openVisitorLog('week')" style="cursor:pointer;position:relative;transition:border-color 0.2s;" onmouseover="this.style.borderColor='var(--green)'" onmouseout="this.style.borderColor=''">
+          <div style="position:absolute;top:10px;right:10px;font-size:10px;background:rgba(0,255,65,0.1);border:1px solid rgba(0,255,65,0.2);border-radius:6px;padding:2px 6px;font-family:var(--font-mono);color:var(--green);">👁</div>
           <div class="stat-icon">📆</div>
           <div class="stat-number" id="statWeekViews">—</div>
           <div class="stat-label">This Week</div>
-          <div style="font-size:10px;color:var(--green);font-family:var(--font-mono);margin-top:4px;">tap to view →</div>
         </div>
-        <div class="stat-card" onclick="openVisitorLog('month')" style="cursor:pointer;" title="Click to see this month's visitors">
+        <div class="stat-card" onclick="openVisitorLog('all')" style="cursor:pointer;position:relative;transition:border-color 0.2s;" onmouseover="this.style.borderColor='var(--green)'" onmouseout="this.style.borderColor=''">
+          <div style="position:absolute;top:10px;right:10px;font-size:10px;background:rgba(0,255,65,0.1);border:1px solid rgba(0,255,65,0.2);border-radius:6px;padding:2px 6px;font-family:var(--font-mono);color:var(--green);">👁</div>
           <div class="stat-icon">🗓️</div>
           <div class="stat-number" id="statMonthViews">—</div>
           <div class="stat-label">This Month</div>
-          <div style="font-size:10px;color:var(--green);font-family:var(--font-mono);margin-top:4px;">tap to view →</div>
         </div>
       </div>
 
