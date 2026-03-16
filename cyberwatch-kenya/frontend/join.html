@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Join CyberWatch Kenya — Get Free Scam Alerts</title>
+  <meta name="description" content="Subscribe free to CyberWatch Kenya and get instant scam alerts protecting you from M-PESA fraud, fake jobs, phishing and more.">
+
+  <!-- Open Graph — looks great when shared on WhatsApp, Facebook, Twitter -->
+  <meta property="og:title" content="🛡️ Get Free Scam Alerts — CyberWatch Kenya">
+  <meta property="og:description" content="Join thousands of Kenyans getting real-time scam warnings. Free forever. No spam. Unsubscribe anytime.">
+  <meta property="og:image" content="https://cyberwatch-kenya.onrender.com/og-image.png">
+  <meta property="og:url" content="https://cyberwatch-kenya.onrender.com/join.html">
+  <meta property="og:type" content="website">
+  <meta name="twitter:card" content="summary_large_image">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --green:  #00ff41;
+      --dark:   #040804;
+      --card:   #0a120a;
+      --border: rgba(0,255,65,0.12);
+    }
+
+    body {
+      background: var(--dark);
+      font-family: 'DM Sans', sans-serif;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* Animated background grid */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(0,255,65,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0,255,65,0.03) 1px, transparent 1px);
+      background-size: 40px 40px;
+      pointer-events: none;
+    }
+
+    /* Glowing orb */
+    body::after {
+      content: '';
+      position: fixed;
+      top: -200px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 600px;
+      height: 600px;
+      background: radial-gradient(ellipse, rgba(0,255,65,0.06) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      padding: 48px 40px;
+      max-width: 480px;
+      width: 100%;
+      position: relative;
+      overflow: hidden;
+      animation: slideUp 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+    }
+
+    @keyframes slideUp {
+      from { opacity: 0; transform: translateY(40px) scale(0.96); }
+      to   { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    /* Top glow line */
+    .card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 10%; right: 10%;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--green), transparent);
+    }
+
+    /* Shield icon */
+    .shield-wrap {
+      width: 72px;
+      height: 72px;
+      border-radius: 20px;
+      background: rgba(0,255,65,0.08);
+      border: 1px solid rgba(0,255,65,0.2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 36px;
+      margin: 0 auto 24px;
+      position: relative;
+      animation: shieldPulse 3s ease-in-out infinite;
+    }
+
+    @keyframes shieldPulse {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(0,255,65,0.2); }
+      50%       { box-shadow: 0 0 0 12px rgba(0,255,65,0); }
+    }
+
+    .live-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(0,255,65,0.08);
+      border: 1px solid rgba(0,255,65,0.2);
+      border-radius: 20px;
+      padding: 4px 12px;
+      font-size: 10px;
+      font-family: 'Courier New', monospace;
+      letter-spacing: 2px;
+      color: var(--green);
+      margin-bottom: 20px;
+    }
+
+    .live-dot {
+      width: 6px; height: 6px;
+      background: var(--green);
+      border-radius: 50%;
+      animation: blink 1.2s ease-in-out infinite;
+    }
+
+    @keyframes blink {
+      0%, 100% { opacity: 1; }
+      50%       { opacity: 0.3; }
+    }
+
+    h1 {
+      font-family: 'Syne', sans-serif;
+      font-size: clamp(1.6rem, 5vw, 2.2rem);
+      font-weight: 800;
+      color: #fff;
+      line-height: 1.15;
+      margin-bottom: 12px;
+      text-align: center;
+    }
+
+    h1 span { color: var(--green); }
+
+    .subtitle {
+      font-size: 14px;
+      color: #6b8a6b;
+      text-align: center;
+      line-height: 1.7;
+      margin-bottom: 32px;
+    }
+
+    /* Perks row */
+    .perks {
+      display: flex;
+      gap: 8px;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin-bottom: 32px;
+    }
+
+    .perk {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      background: rgba(0,255,65,0.05);
+      border: 1px solid rgba(0,255,65,0.1);
+      border-radius: 20px;
+      padding: 5px 12px;
+      font-size: 12px;
+      color: #88aa88;
+      font-weight: 500;
+      transition: all 0.2s;
+    }
+
+    .perk:hover {
+      background: rgba(0,255,65,0.1);
+      color: var(--green);
+      border-color: rgba(0,255,65,0.3);
+    }
+
+    /* Form */
+    .form-group { margin-bottom: 14px; }
+
+    input {
+      width: 100%;
+      background: rgba(0,0,0,0.4);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 12px;
+      padding: 14px 18px;
+      font-size: 14px;
+      font-family: 'DM Sans', sans-serif;
+      color: #fff;
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    input::placeholder { color: #334433; }
+
+    input:focus {
+      border-color: rgba(0,255,65,0.4);
+      box-shadow: 0 0 0 3px rgba(0,255,65,0.06);
+    }
+
+    .btn-subscribe {
+      width: 100%;
+      padding: 16px;
+      background: var(--green);
+      color: #000;
+      border: none;
+      border-radius: 12px;
+      font-size: 15px;
+      font-family: 'Syne', sans-serif;
+      font-weight: 800;
+      cursor: pointer;
+      letter-spacing: 0.5px;
+      transition: all 0.2s;
+      margin-top: 6px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .btn-subscribe::before {
+      content: '';
+      position: absolute;
+      top: 0; left: -100%;
+      width: 100%; height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+      transition: left 0.4s;
+    }
+
+    .btn-subscribe:hover { background: #00e639; transform: translateY(-1px); box-shadow: 0 8px 24px rgba(0,255,65,0.3); }
+    .btn-subscribe:hover::before { left: 100%; }
+    .btn-subscribe:active { transform: translateY(0); }
+    .btn-subscribe:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+
+    .spinner {
+      display: inline-block;
+      width: 16px; height: 16px;
+      border: 2px solid rgba(0,0,0,0.3);
+      border-top-color: #000;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      vertical-align: middle;
+      margin-right: 8px;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .notice {
+      font-size: 11px;
+      color: #334433;
+      text-align: center;
+      margin-top: 14px;
+      font-family: 'Courier New', monospace;
+      letter-spacing: 0.5px;
+    }
+
+    .alert-box {
+      border-radius: 10px;
+      padding: 12px 16px;
+      font-size: 13px;
+      margin-bottom: 14px;
+      display: none;
+    }
+
+    .alert-error   { background: rgba(255,34,68,0.1);  border: 1px solid rgba(255,34,68,0.2);  color: #ff6680; display: block; }
+    .alert-success { background: rgba(0,255,65,0.08); border: 1px solid rgba(0,255,65,0.2); color: var(--green); display: block; }
+
+    /* Success state */
+    .success-state {
+      text-align: center;
+      padding: 16px 0;
+      display: none;
+    }
+
+    .success-icon {
+      font-size: 64px;
+      margin-bottom: 16px;
+      animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    @keyframes popIn {
+      from { transform: scale(0); opacity: 0; }
+      to   { transform: scale(1); opacity: 1; }
+    }
+
+    .success-title {
+      font-family: 'Syne', sans-serif;
+      font-size: 1.5rem;
+      font-weight: 800;
+      color: var(--green);
+      margin-bottom: 8px;
+    }
+
+    .success-sub {
+      font-size: 14px;
+      color: #6b8a6b;
+      line-height: 1.7;
+      margin-bottom: 24px;
+    }
+
+    .share-section {
+      background: rgba(0,255,65,0.04);
+      border: 1px solid rgba(0,255,65,0.1);
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 16px;
+    }
+
+    .share-label {
+      font-size: 11px;
+      color: var(--green);
+      font-family: 'Courier New', monospace;
+      letter-spacing: 2px;
+      margin-bottom: 10px;
+    }
+
+    .share-buttons {
+      display: flex;
+      gap: 8px;
+    }
+
+    .share-btn {
+      flex: 1;
+      padding: 10px 8px;
+      border-radius: 10px;
+      border: 1px solid;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      text-decoration: none;
+      text-align: center;
+      transition: all 0.2s;
+      font-family: 'DM Sans', sans-serif;
+    }
+
+    .share-wa   { background: rgba(37,211,102,0.1); border-color: rgba(37,211,102,0.3); color: #25d366; }
+    .share-wa:hover { background: rgba(37,211,102,0.2); }
+    .share-tw   { background: rgba(29,161,242,0.1); border-color: rgba(29,161,242,0.3); color: #1da1f2; }
+    .share-tw:hover { background: rgba(29,161,242,0.2); }
+    .share-copy { background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.1); color: #888; }
+    .share-copy:hover { background: rgba(255,255,255,0.1); color: #fff; }
+
+    .visit-btn {
+      display: block;
+      width: 100%;
+      padding: 14px;
+      background: transparent;
+      border: 1px solid rgba(0,255,65,0.3);
+      border-radius: 12px;
+      color: var(--green);
+      font-size: 14px;
+      font-weight: 700;
+      text-align: center;
+      text-decoration: none;
+      transition: all 0.2s;
+      font-family: 'DM Sans', sans-serif;
+    }
+
+    .visit-btn:hover { background: rgba(0,255,65,0.06); }
+
+    /* Branding */
+    .brand {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      margin-bottom: 28px;
+      font-family: 'Syne', sans-serif;
+      font-size: 13px;
+      font-weight: 700;
+      color: #336633;
+      letter-spacing: 1px;
+    }
+
+    @media (max-width: 480px) {
+      .card { padding: 36px 24px; border-radius: 20px; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="card">
+
+    <!-- Brand -->
+    <div class="brand">🛡️ CYBERWATCH KENYA</div>
+
+    <!-- Shield -->
+    <div class="shield-wrap">🛡️</div>
+
+    <!-- Live pill -->
+    <div style="text-align:center;">
+      <div class="live-pill" style="display:inline-flex;">
+        <div class="live-dot"></div>
+        PROTECTING KENYANS ONLINE
+      </div>
+    </div>
+
+    <!-- Headline -->
+    <h1>Stay ahead of<br><span>scammers</span></h1>
+
+    <p class="subtitle">
+      Get instant scam alerts before fraudsters reach you —<br>
+      M-PESA fraud, fake jobs, phishing & more. Free forever.
+    </p>
+
+    <!-- Perks -->
+    <div class="perks">
+      <div class="perk">✅ Free forever</div>
+      <div class="perk">📡 Real-time alerts</div>
+      <div class="perk">🇰🇪 Kenya focused</div>
+      <div class="perk">🚫 No spam</div>
+    </div>
+
+    <!-- Alert box -->
+    <div class="alert-box" id="alertBox"></div>
+
+    <!-- Form -->
+    <div id="formState">
+      <div class="form-group">
+        <input type="text" id="joinName" placeholder="Your full name" autocomplete="name">
+      </div>
+      <div class="form-group">
+        <input type="email" id="joinEmail" placeholder="your@email.com" autocomplete="email">
+      </div>
+      <button class="btn-subscribe" id="joinBtn" onclick="handleJoin()">
+        🛡️ Get Free Scam Alerts
+      </button>
+      <p class="notice">No credit card • Unsubscribe anytime • 100% free</p>
+    </div>
+
+    <!-- Success state -->
+    <div class="success-state" id="successState">
+      <div class="success-icon">🎉</div>
+      <div class="success-title">You're protected!</div>
+      <p class="success-sub" id="successName">
+        Welcome to CyberWatch Kenya.<br>
+        Check your inbox for a welcome email.
+      </p>
+
+      <div class="share-section">
+        <div class="share-label">// SHARE & PROTECT OTHERS</div>
+        <div class="share-buttons">
+          <a class="share-btn share-wa" id="shareWA" href="#" target="_blank">💬 WhatsApp</a>
+          <a class="share-btn share-tw" id="shareTW" href="#" target="_blank">🐦 Twitter</a>
+          <button class="share-btn share-copy" onclick="copyLink()">🔗 Copy Link</button>
+        </div>
+      </div>
+
+      <a href="https://cyberwatch-kenya.onrender.com" class="visit-btn">
+        View Latest Scam Alerts →
+      </a>
+    </div>
+
+  </div>
+
+  <script>
+    const API      = 'https://cyberwatch-kenya.onrender.com/api';
+    const SITE_URL = 'https://cyberwatch-kenya.onrender.com/join.html';
+    const SHARE_MSG = encodeURIComponent('🛡️ I just subscribed to CyberWatch Kenya — free scam alerts protecting Kenyans from M-PESA fraud, fake jobs & more. Join me 👉 ' + SITE_URL);
+
+    // Pre-fill from URL params if any
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('name'))  document.getElementById('joinName').value  = params.get('name');
+    if (params.get('email')) document.getElementById('joinEmail').value = params.get('email');
+
+    async function handleJoin() {
+      const name    = document.getElementById('joinName').value.trim();
+      const email   = document.getElementById('joinEmail').value.trim();
+      const alertEl = document.getElementById('alertBox');
+      const btn     = document.getElementById('joinBtn');
+
+      alertEl.className = 'alert-box';
+      alertEl.textContent = '';
+
+      if (!name) {
+        alertEl.className = 'alert-box alert-error';
+        alertEl.textContent = '⚠️ Please enter your name';
+        document.getElementById('joinName').focus();
+        return;
+      }
+      if (!email || !/^\S+@\S+\.\S+$/.test(email)) {
+        alertEl.className = 'alert-box alert-error';
+        alertEl.textContent = '⚠️ Please enter a valid email address';
+        document.getElementById('joinEmail').focus();
+        return;
+      }
+
+      btn.disabled = true;
+      btn.innerHTML = '<span class="spinner"></span>Subscribing...';
+
+      try {
+        const res  = await fetch(`${API}/subscribers/subscribe`, {
+          method:  'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body:    JSON.stringify({ name, email })
+        });
+        const data = await res.json();
+
+        if (data.success) {
+          showSuccess(name);
+        } else {
+          alertEl.className = 'alert-box alert-error';
+          alertEl.textContent = '❌ ' + (data.message || 'Something went wrong');
+          btn.disabled = false;
+          btn.innerHTML = '🛡️ Get Free Scam Alerts';
+        }
+      } catch (err) {
+        alertEl.className = 'alert-box alert-error';
+        alertEl.textContent = '❌ Cannot connect. Please try again.';
+        btn.disabled = false;
+        btn.innerHTML = '🛡️ Get Free Scam Alerts';
+      }
+    }
+
+    function showSuccess(name) {
+      const firstName = name.split(' ')[0];
+
+      document.getElementById('formState').style.display    = 'none';
+      document.getElementById('successState').style.display = 'block';
+      document.getElementById('alertBox').className         = 'alert-box';
+      document.getElementById('successName').innerHTML =
+        `Welcome, <strong style="color:#fff;">${firstName}</strong>! 🎉<br>Check your inbox for a welcome email.`;
+
+      // Set share links
+      document.getElementById('shareWA').href = `https://wa.me/?text=${SHARE_MSG}`;
+      document.getElementById('shareTW').href = `https://twitter.com/intent/tweet?text=${SHARE_MSG}`;
+    }
+
+    function copyLink() {
+      navigator.clipboard.writeText(SITE_URL).then(() => {
+        const btn = event.target;
+        btn.textContent = '✅ Copied!';
+        btn.style.color = 'var(--green)';
+        setTimeout(() => { btn.textContent = '🔗 Copy Link'; btn.style.color = ''; }, 2000);
+      });
+    }
+
+    // Allow Enter key to submit
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Enter') handleJoin();
+    });
+  </script>
+
+</body>
+</html>
