@@ -428,16 +428,42 @@
 
     <!-- Form -->
     <div id="formState">
+
+      <!-- Plan selector -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px;">
+
+        <div id="planFree" onclick="selectPlan('free')"
+          style="border:2px solid rgba(0,255,65,0.4);background:rgba(0,255,65,0.06);border-radius:14px;padding:14px 12px;cursor:pointer;text-align:center;transition:all 0.2s;">
+          <div style="font-size:22px;margin-bottom:6px;">📡</div>
+          <div style="font-family:'Syne',sans-serif;font-size:13px;font-weight:800;color:#fff;margin-bottom:3px;">Free</div>
+          <div style="font-family:'Courier New',monospace;font-size:18px;font-weight:700;color:#00ff41;margin-bottom:4px;">KSh 0</div>
+          <div style="font-size:10px;color:#557755;">Email alerts only</div>
+        </div>
+
+        <div id="planPremium" onclick="selectPlan('premium')"
+          style="border:2px solid rgba(255,255,255,0.08);background:transparent;border-radius:14px;padding:14px 12px;cursor:pointer;text-align:center;transition:all 0.2s;position:relative;">
+          <div style="position:absolute;top:-9px;left:50%;transform:translateX(-50%);background:#00ccff;color:#000;font-size:9px;font-weight:800;padding:2px 10px;border-radius:10px;letter-spacing:1px;white-space:nowrap;">⭐ BEST</div>
+          <div style="font-size:22px;margin-bottom:6px;">⭐</div>
+          <div style="font-family:'Syne',sans-serif;font-size:13px;font-weight:800;color:#fff;margin-bottom:3px;">Premium</div>
+          <div style="font-family:'Courier New',monospace;font-size:18px;font-weight:700;color:#00ccff;margin-bottom:4px;">KSh 99<span style="font-size:10px;color:#557755;">/mo</span></div>
+          <div style="font-size:10px;color:#557755;">Email + SMS alerts</div>
+        </div>
+
+      </div>
+
       <div class="form-group">
         <input type="text" id="joinName" placeholder="Your full name" autocomplete="name">
       </div>
       <div class="form-group">
         <input type="email" id="joinEmail" placeholder="your@email.com" autocomplete="email">
       </div>
+      <div class="form-group" id="phoneGroup" style="display:none;">
+        <input type="tel" id="joinPhone" placeholder="Phone number e.g. 0712 345 678" autocomplete="tel">
+      </div>
       <button class="btn-subscribe" id="joinBtn" onclick="handleJoin()">
         🛡️ Get Free Scam Alerts
       </button>
-      <p class="notice">No credit card • Unsubscribe anytime • 100% free</p>
+      <p class="notice" id="joinNotice">No credit card • Unsubscribe anytime • 100% free</p>
     </div>
 
     <!-- Success state -->
@@ -465,12 +491,45 @@
 
   </div>
 
+  <script src="https://js.paystack.co/v1/inline.js"></script>
   <script>
-    const API      = 'https://cyberwatch-kenya.onrender.com/api';
-    const SITE_URL = 'https://cyberwatch-kenya.onrender.com/join.html';
-    const SHARE_MSG = encodeURIComponent('🛡️ I just subscribed to CyberWatch Kenya — free scam alerts protecting Kenyans from M-PESA fraud, fake jobs & more. Join me 👉 ' + SITE_URL);
+    const API        = 'https://cyberwatch-kenya.onrender.com/api';
+    const PAYSTACK_PK = 'pk_test_e673f898e0d3a6f5999c3c99b9e3e3b391dd4ee9';
+    const SITE_URL    = 'https://cyberwatch-kenya.onrender.com/join.html';
+    const SHARE_MSG   = encodeURIComponent('🛡️ I just subscribed to CyberWatch Kenya — free scam alerts protecting Kenyans from M-PESA fraud, fake jobs & more. Join me 👉 ' + SITE_URL);
 
-    // Pre-fill from URL params if any
+    let selectedPlan = 'free';
+
+    function selectPlan(plan) {
+      selectedPlan = plan;
+      const freeEl    = document.getElementById('planFree');
+      const premiumEl = document.getElementById('planPremium');
+      const phoneGrp  = document.getElementById('phoneGroup');
+      const btn       = document.getElementById('joinBtn');
+      const notice    = document.getElementById('joinNotice');
+
+      if (plan === 'free') {
+        freeEl.style.borderColor    = 'rgba(0,255,65,0.4)';
+        freeEl.style.background     = 'rgba(0,255,65,0.06)';
+        premiumEl.style.borderColor = 'rgba(255,255,255,0.08)';
+        premiumEl.style.background  = 'transparent';
+        phoneGrp.style.display      = 'none';
+        btn.innerHTML               = '🛡️ Get Free Scam Alerts';
+        btn.style.background        = 'var(--green)';
+        notice.textContent          = 'No credit card • Unsubscribe anytime • 100% free';
+      } else {
+        premiumEl.style.borderColor = 'rgba(0,204,255,0.5)';
+        premiumEl.style.background  = 'rgba(0,204,255,0.06)';
+        freeEl.style.borderColor    = 'rgba(255,255,255,0.08)';
+        freeEl.style.background     = 'transparent';
+        phoneGrp.style.display      = 'block';
+        btn.innerHTML               = '⭐ Subscribe Premium — KSh 99/mo';
+        btn.style.background        = '#00ccff';
+        notice.textContent          = 'Secured by Paystack • M-PESA or Card • Cancel anytime';
+      }
+    }
+
+    // Pre-fill from URL params
     const params = new URLSearchParams(window.location.search);
     if (params.get('name'))  document.getElementById('joinName').value  = params.get('name');
     if (params.get('email')) document.getElementById('joinEmail').value = params.get('email');
@@ -478,6 +537,7 @@
     async function handleJoin() {
       const name    = document.getElementById('joinName').value.trim();
       const email   = document.getElementById('joinEmail').value.trim();
+      const phone   = document.getElementById('joinPhone')?.value.trim() || '';
       const alertEl = document.getElementById('alertBox');
       const btn     = document.getElementById('joinBtn');
 
@@ -487,53 +547,113 @@
       if (!name) {
         alertEl.className = 'alert-box alert-error';
         alertEl.textContent = '⚠️ Please enter your name';
-        document.getElementById('joinName').focus();
         return;
       }
       if (!email || !/^\S+@\S+\.\S+$/.test(email)) {
         alertEl.className = 'alert-box alert-error';
         alertEl.textContent = '⚠️ Please enter a valid email address';
-        document.getElementById('joinEmail').focus();
         return;
       }
 
+      if (selectedPlan === 'free') {
+        await subscribeFree(name, email, btn, alertEl);
+      } else {
+        await subscribePremium(name, email, phone, btn, alertEl);
+      }
+    }
+
+    async function subscribeFree(name, email, btn, alertEl) {
       btn.disabled = true;
       btn.innerHTML = '<span class="spinner"></span>Subscribing...';
-
       try {
         const res  = await fetch(`${API}/subscribers/subscribe`, {
-          method:  'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body:    JSON.stringify({ name, email })
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name, email })
         });
         const data = await res.json();
-
         if (data.success) {
-          showSuccess(name);
+          showSuccess(name, 'free');
         } else {
           alertEl.className = 'alert-box alert-error';
           alertEl.textContent = '❌ ' + (data.message || 'Something went wrong');
           btn.disabled = false;
           btn.innerHTML = '🛡️ Get Free Scam Alerts';
         }
-      } catch (err) {
+      } catch(err) {
         alertEl.className = 'alert-box alert-error';
-        alertEl.textContent = '❌ Cannot connect. Please try again.';
+        alertEl.textContent = '❌ Cannot connect. Try again.';
         btn.disabled = false;
         btn.innerHTML = '🛡️ Get Free Scam Alerts';
       }
     }
 
-    function showSuccess(name) {
-      const firstName = name.split(' ')[0];
+    async function subscribePremium(name, email, phone, btn, alertEl) {
+      btn.disabled = true;
+      btn.innerHTML = '<span class="spinner"></span>Opening payment...';
+      try {
+        const res  = await fetch(`${API}/paystack/initialize`, {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name, email, phone })
+        });
+        const data = await res.json();
+        if (!data.success) {
+          alertEl.className = 'alert-box alert-error';
+          alertEl.textContent = '❌ ' + data.message;
+          btn.disabled = false;
+          btn.innerHTML = '⭐ Subscribe Premium — KSh 99/mo';
+          return;
+        }
+        const handler = PaystackPop.setup({
+          key: PAYSTACK_PK, email, amount: 9900, currency: 'KES',
+          ref: data.reference,
+          metadata: { name },
+          callback: function(response) {
+            btn.innerHTML = '<span class="spinner"></span>Confirming...';
+            pollPayment(response.reference, name, btn);
+          },
+          onClose: function() {
+            btn.disabled = false;
+            btn.innerHTML = '⭐ Subscribe Premium — KSh 99/mo';
+          }
+        });
+        handler.openIframe();
+      } catch(err) {
+        alertEl.className = 'alert-box alert-error';
+        alertEl.textContent = '❌ Cannot connect. Try again.';
+        btn.disabled = false;
+        btn.innerHTML = '⭐ Subscribe Premium — KSh 99/mo';
+      }
+    }
 
+    async function pollPayment(reference, name, btn) {
+      let attempts = 0;
+      const poll = setInterval(async () => {
+        attempts++;
+        try {
+          const res  = await fetch(`${API}/paystack/status/${reference}`);
+          const data = await res.json();
+          if (data.success && data.status === 'active') {
+            clearInterval(poll);
+            showSuccess(name, 'premium');
+          }
+        } catch(e) {}
+        if (attempts >= 15) { clearInterval(poll); showSuccess(name, 'premium'); }
+      }, 3000);
+    }
+
+    function showSuccess(name, plan) {
+      const firstName = name.split(' ')[0];
       document.getElementById('formState').style.display    = 'none';
       document.getElementById('successState').style.display = 'block';
       document.getElementById('alertBox').className         = 'alert-box';
-      document.getElementById('successName').innerHTML =
-        `Welcome, <strong style="color:#fff;">${firstName}</strong>! 🎉<br>Check your inbox for a welcome email.`;
 
-      // Set share links
+      const isPremium = plan === 'premium';
+      document.getElementById('successState').querySelector('.success-icon').textContent = isPremium ? '⭐' : '🎉';
+      document.getElementById('successState').querySelector('.success-title').textContent = isPremium ? 'Welcome, Premium member!' : "You're protected!";
+      document.getElementById('successName').innerHTML = isPremium
+        ? `<span style="background:#00ccff;color:#000;font-size:11px;font-weight:800;padding:2px 10px;border-radius:10px;">⭐ PREMIUM</span><br><br>Welcome, <strong style="color:#fff;">${firstName}</strong>! Your subscription is active.<br>Check your inbox for a welcome email.`
+        : `Welcome, <strong style="color:#fff;">${firstName}</strong>! 🎉<br>Check your inbox for a welcome email.`;
+
       document.getElementById('shareWA').href = `https://wa.me/?text=${SHARE_MSG}`;
       document.getElementById('shareTW').href = `https://twitter.com/intent/tweet?text=${SHARE_MSG}`;
     }
