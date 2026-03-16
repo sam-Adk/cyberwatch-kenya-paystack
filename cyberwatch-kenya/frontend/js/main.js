@@ -361,6 +361,113 @@ async function submitScamReport() {
 // LOAD STATS (for hero counters)
 // ─────────────────────────────────────────────
 
+
+// ─────────────────────────────────────────────
+// SCAM CHECKER
+// ─────────────────────────────────────────────
+
+async function runCheck() {
+  const input   = document.getElementById('checkerInput');
+  const results = document.getElementById('checkerResults');
+  const btn     = document.getElementById('checkerBtn');
+  const query   = input?.value.trim();
+
+  if (!query || query.length < 3) {
+    if (results) results.innerHTML = `
+      <div style="text-align:center;padding:16px;color:#ff6600;font-size:13px;">
+        ⚠️ Please enter at least 3 characters to search.
+      </div>`;
+    return;
+  }
+
+  btn.textContent = '...';
+  btn.disabled    = true;
+  results.innerHTML = `
+    <div style="text-align:center;padding:24px;color:#6b8a6b;font-size:13px;">
+      <div style="width:20px;height:20px;border:2px solid rgba(0,255,65,0.2);border-top-color:#00ff41;border-radius:50%;animation:spin 0.7s linear infinite;margin:0 auto 10px;"></div>
+      Checking database...
+    </div>`;
+
+  try {
+    const res  = await fetch(`${API}/check?q=${encodeURIComponent(query)}`);
+    const data = await res.json();
+
+    if (!data.found) {
+      results.innerHTML = `
+        <div style="background:rgba(0,255,65,0.06);border:1px solid rgba(0,255,65,0.2);border-radius:12px;padding:20px;text-align:center;">
+          <div style="font-size:36px;margin-bottom:10px;">✅</div>
+          <div style="font-size:16px;font-weight:700;color:#00ff41;margin-bottom:6px;">Not Found in Our Database</div>
+          <div style="font-size:13px;color:#6b8a6b;line-height:1.7;margin-bottom:16px;">
+            No reports found for <strong style="color:#fff;">"${escapeHTML(query)}"</strong>.<br>
+            This doesn't guarantee it's safe — always verify independently.
+          </div>
+          <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;">
+            <a href="#report" style="background:rgba(0,255,65,0.1);border:1px solid rgba(0,255,65,0.3);color:#00ff41;padding:8px 18px;border-radius:8px;text-decoration:none;font-size:12px;font-weight:700;">
+              🚨 Report this number
+            </a>
+            <a href="subscribe.html" style="background:#00ff41;color:#000;padding:8px 18px;border-radius:8px;text-decoration:none;font-size:12px;font-weight:700;">
+              🛡️ Get Free Alerts
+            </a>
+          </div>
+        </div>`;
+    } else {
+      const typeColors = {
+        'Mobile Money Scam': '#ff6600',
+        'Phishing':          '#ff2244',
+        'Crypto Scam':       '#ff2244',
+        'Employment Scam':   '#ffcc00',
+        'Romance Scam':      '#ff6600',
+        'E-commerce Fraud':  '#ffcc00',
+        'Investment Scam':   '#ff2244',
+        'Impersonation':     '#ff6600',
+        'Online Fraud':      '#ffcc00',
+        'Other':             '#888888'
+      };
+
+      const resultsHTML = data.results.map(r => {
+        const color = typeColors[r.category] || '#888';
+        const date  = new Date(r.date).toLocaleDateString('en-KE', { day:'numeric', month:'short', year:'numeric' });
+        return `
+          <div style="background:rgba(0,0,0,0.3);border:1px solid rgba(255,255,255,0.06);border-left:3px solid ${color};border-radius:0 10px 10px 0;padding:14px 16px;margin-bottom:10px;">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;flex-wrap:wrap;gap:6px;">
+              <span style="background:${color};color:#000;font-size:10px;font-weight:800;padding:2px 10px;border-radius:10px;letter-spacing:1px;">${r.category}</span>
+              <span style="font-family:'Courier New',monospace;font-size:10px;color:#334433;">${date}</span>
+            </div>
+            ${r.platform ? `<div style="font-size:11px;color:#557755;margin-bottom:6px;font-family:'Courier New',monospace;">Platform: ${escapeHTML(r.platform)}</div>` : ''}
+            <p style="margin:0;font-size:13px;color:#aabbaa;line-height:1.6;">${escapeHTML(r.preview)}</p>
+            ${r.lost > 0 ? `<div style="margin-top:6px;font-size:11px;color:#ff4444;font-family:'Courier New',monospace;">⚠️ KSh ${r.lost.toLocaleString()} reported lost</div>` : ''}
+          </div>`;
+      }).join('');
+
+      results.innerHTML = `
+        <div style="background:rgba(255,34,68,0.08);border:1px solid rgba(255,34,68,0.3);border-radius:12px;padding:16px 20px;margin-bottom:16px;text-align:center;">
+          <div style="font-size:32px;margin-bottom:8px;">🚨</div>
+          <div style="font-size:16px;font-weight:800;color:#ff2244;margin-bottom:4px;">
+            WARNING — ${data.count} Report${data.count !== 1 ? 's' : ''} Found
+          </div>
+          <div style="font-size:13px;color:#aabbaa;">
+            <strong style="color:#fff;">"${escapeHTML(query)}"</strong> has been reported by Kenyans. Be very careful.
+          </div>
+        </div>
+        ${resultsHTML}
+        <div style="background:rgba(0,255,65,0.05);border:1px solid rgba(0,255,65,0.15);border-radius:10px;padding:16px;text-align:center;margin-top:8px;">
+          <p style="font-size:13px;color:#6b8a6b;margin:0 0 12px;">Subscribe to get warned before these scams reach you</p>
+          <a href="subscribe.html" style="display:inline-block;background:#00ff41;color:#000;padding:10px 24px;border-radius:8px;text-decoration:none;font-size:13px;font-weight:800;">
+            🛡️ Get Free Scam Alerts →
+          </a>
+        </div>`;
+    }
+  } catch (err) {
+    results.innerHTML = `
+      <div style="text-align:center;padding:16px;color:#ff6600;font-size:13px;">
+        ❌ Could not connect. Please try again.
+      </div>`;
+  } finally {
+    btn.textContent = 'CHECK →';
+    btn.disabled    = false;
+  }
+}
+
 async function loadStats() {
   try {
     const [postsRes, subsRes, reportsRes] = await Promise.all([
