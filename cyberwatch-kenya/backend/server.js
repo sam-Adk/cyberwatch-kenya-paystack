@@ -23,6 +23,7 @@ const mpesaRoutes = require('./routes/mpesaRoutes');
 const paystackRoutes = require('./routes/paystackRoutes');
 const uploadRoutes      = require('./routes/uploadRoutes');
 const analyticsRoutes   = require('./routes/analyticsRoutes');
+const checkRoutes       = require('./routes/checkRoutes');
 const { startCronJobs } = require('./utils/cronJobs');
 
 const app = express();
@@ -55,6 +56,7 @@ app.use('/api/mpesa', mpesaRoutes);
 app.use('/api/paystack', paystackRoutes);  // Paystack payments
 app.use('/api/upload',   uploadRoutes);     // Image uploads
 app.use('/api/analytics', analyticsRoutes); // Page view tracking
+app.use('/api/check',     checkRoutes);     // Scam number checker
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {
