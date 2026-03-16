@@ -26,6 +26,7 @@
       </a>
       <ul class="navbar-links" id="navLinks">
         <li><a href="index.html" class="active">Home</a></li>
+        <li><a href="#checker" style="color:#00ff41;font-weight:700;">🔍 Check a Number</a></li>
         <li><a href="#alerts">Scam Alerts</a></li>
         <li><a href="scam-map.html">🗺️ Scam Map</a></li>
         <li><a href="pricing.html">Pricing</a></li>
@@ -82,6 +83,66 @@
     </div>
   </section>
 
+
+
+  <!-- ═══════════════════ SCAM CHECKER ═══════════════════ -->
+  <section id="checker" style="padding:0 0 60px;">
+    <div class="container">
+      <div id="checkerCard" style="
+        background:linear-gradient(135deg,#0a1a0a 0%,#0d2010 60%,#0a1a0a 100%);
+        border:1px solid rgba(0,255,65,0.2);
+        border-radius:20px;
+        padding:40px;
+        position:relative;
+        overflow:hidden;
+      ">
+        <!-- Background glow -->
+        <div style="position:absolute;top:-60px;left:50%;transform:translateX(-50%);width:500px;height:300px;background:radial-gradient(ellipse,rgba(0,255,65,0.05),transparent 70%);pointer-events:none;"></div>
+
+        <!-- Header -->
+        <div style="text-align:center;margin-bottom:28px;position:relative;">
+          <div style="display:inline-flex;align-items:center;gap:8px;background:rgba(0,255,65,0.08);border:1px solid rgba(0,255,65,0.2);border-radius:20px;padding:5px 14px;margin-bottom:14px;">
+            <span style="width:7px;height:7px;background:#00ff41;border-radius:50%;display:inline-block;animation:pulse 1.5s infinite;"></span>
+            <span style="font-family:'Courier New',monospace;font-size:10px;color:#00ff41;letter-spacing:2px;font-weight:700;">FREE SCAM CHECKER</span>
+          </div>
+          <h2 style="font-size:clamp(1.4rem,3vw,2rem);color:#fff;font-weight:800;margin:0 0 8px;">
+            🔍 Check Before You Pay
+          </h2>
+          <p style="font-size:14px;color:#6b8a6b;margin:0;max-width:500px;margin:0 auto;">
+            Type any phone number, WhatsApp number, website or company name — instantly see if Kenyans have reported it as a scam.
+          </p>
+        </div>
+
+        <!-- Search Box -->
+        <div style="max-width:580px;margin:0 auto 20px;">
+          <div style="display:flex;gap:0;background:rgba(0,0,0,0.5);border:1px solid rgba(0,255,65,0.2);border-radius:14px;overflow:hidden;transition:border-color 0.2s;" id="checkerInputWrap">
+            <input
+              type="text"
+              id="checkerInput"
+              placeholder="e.g. 0712345678 or fakesite.co.ke or KCB loan offer"
+              style="flex:1;background:transparent;border:none;padding:16px 20px;font-size:15px;color:#fff;outline:none;font-family:'DM Sans',sans-serif;"
+              onkeydown="if(event.key==='Enter')runCheck()"
+              onfocus="document.getElementById('checkerInputWrap').style.borderColor='rgba(0,255,65,0.5)'"
+              onblur="document.getElementById('checkerInputWrap').style.borderColor='rgba(0,255,65,0.2)'"
+            >
+            <button onclick="runCheck()" id="checkerBtn"
+              style="background:#00ff41;color:#000;border:none;padding:16px 28px;font-size:14px;font-weight:800;cursor:pointer;font-family:'Courier New',monospace;letter-spacing:1px;transition:background 0.2s;white-space:nowrap;"
+              onmouseover="this.style.background='#00e639'"
+              onmouseout="this.style.background='#00ff41'">
+              CHECK →
+            </button>
+          </div>
+          <p style="font-size:11px;color:#334433;text-align:center;margin-top:8px;font-family:'Courier New',monospace;">
+            Free to use • No account needed • Powered by community reports
+          </p>
+        </div>
+
+        <!-- Results -->
+        <div id="checkerResults" style="max-width:580px;margin:0 auto;"></div>
+
+      </div>
+    </div>
+  </section>
 
   <!-- ═══════════════════ SCAM OF THE WEEK ═══════════════════ -->
   <section id="scam-of-week" style="padding:70px 0 0;">
