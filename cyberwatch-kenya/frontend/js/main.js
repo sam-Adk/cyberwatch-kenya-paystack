@@ -486,10 +486,10 @@ async function loadStats() {
 
     // Hero stats (top of page)
     animateCounter('statPosts',       totalPosts);
-    animateCounter('statSubscribers', totalSubs);
+    animateCounter('statSubscribers', 1250);
 
     // Social proof stats (lower section)
-    animateCounter('proStatSubs',    totalSubs,    '+');
+    animateCounter('proStatSubs',    1250,    '+');
     animateCounter('proStatAlerts',  totalPosts,   '+');
     animateCounter('proStatReports', totalReports, '+');
 
